@@ -236,8 +236,8 @@ post_meta:
 # Dependencies: https://github.com/willin/hexo-wordcount
 post_wordcount:
   item_text: true
-  wordcount: false
-  min2read: false
+  wordcount: true
+  min2read: true
 
 # Wechat Subscriber
 #wechat_subscriber:
@@ -295,10 +295,11 @@ baidu_analytics: 417908b35c95bbebe64690e401f7a99a
 #duoshuo_shortname:
 
 # Disqus
-# disqus:
+#disqus:
 #   enable: true
-#   shortname: hustclf
+#   shortname: hustclf.github.io
 #   count: true
+disqus_shortname: hustclf.github.io
 
 # Hypercomments
 #hypercomments_id:
@@ -314,7 +315,7 @@ baidu_analytics: 417908b35c95bbebe64690e401f7a99a
 
 # Support for youyan comments system.
 # You can get your uid from http://www.uyan.cc
-youyan_uid: 2145562
+# youyan_uid: 2145562
 
 # Support for LiveRe comments system.
 # You can get your uid from https://livere.com/insight/myCode (General web site)
