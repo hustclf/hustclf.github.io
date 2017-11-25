@@ -20,6 +20,8 @@ MariaDB [(none)]> select @@session.tx_isolation;
 1 row in set (0.00 sec)
 ```
 
+<!-- more -->
+
 ### 如何修改事务隔离级
 #### 参考 [mysql手册](https://dev.mysql.com/doc/refman/5.7/en/set-transaction.html)
 ```

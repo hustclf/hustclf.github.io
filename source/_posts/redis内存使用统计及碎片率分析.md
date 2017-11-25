@@ -17,6 +17,8 @@ redis提供了info命令，可以获取redis内存使用情况。
 + mem_fragmentation_ratio : used_memory_rss 和 used_memory 之间的比率
 + used_memory_lua : Lua 引擎所使用的内存大小（以字节为单位）
 + mem_allocator : 在编译时指定的，Redis所使用的内存分配器。可以是 libc 、 jemalloc 或者 tcmalloc 。
+
+<!-- more -->
 ```
 redis 127.0.0.1:6389> info
     ...
