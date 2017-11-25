@@ -353,7 +353,7 @@ han: false
 # Disqus
 disqus:
   enable: true
-  shortname: hustclf.github.io
+  shortname: hustclf-github-io
   count: true
 
 # Hypercomments
