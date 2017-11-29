@@ -547,16 +547,16 @@ busuanzi_count:
   enable: true
   # custom uv span for the whole site
   site_uv: true
-  site_uv_header: <i class="fa fa-user"></i>
-  site_uv_footer:
+  site_uv_header: <i class="fa fa-user"> 总访客数</i>
+  site_uv_footer: 人次
   # custom pv span for the whole site
   site_pv: true
-  site_pv_header: <i class="fa fa-eye"></i>
-  site_pv_footer:
+  site_pv_header: <i class="fa fa-eye"> 总访问量</i>
+  site_pv_footer: 次
   # custom pv span for one page only
   page_pv: true
-  page_pv_header: <i class="fa fa-file-o"></i>
-  page_pv_footer:
+  page_pv_header: <i class="fa fa-file-o"> 总阅读量</i>
+  page_pv_footer: 次
 
 
 # Tencent analytics ID
@@ -806,3 +806,6 @@ images: images
 
 # Theme version
 version: 5.1.3
+
+# 开启字数统计
+word_count: true

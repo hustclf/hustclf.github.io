@@ -434,3 +434,7 @@
   </article>
 
 {% endmacro %}
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">共{{ totalcount(site) }}字</span>
+</div>
