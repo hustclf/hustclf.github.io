@@ -196,21 +196,21 @@ redis执行完这些命令，并且会在t100时刻将结果返回。
         $key    = 'testbyclf';
 
         $current = $redis->get($key);
-                if ($current != null && $current >= $limit) {
-                        echo "permission rejected\n";
-                } else {
-                        $ttl = $redis->ttl($key);
+        if ($current != null && $current >= $limit) {
+                echo "permission rejected\n";
+        } else {
+                $ttl = $redis->ttl($key);
 
-                        $redis->multi(\Redis::MULTI);
-                        $redis->incr($key);
+                $redis->multi(\Redis::MULTI);
+                $redis->incr($key);
 
-                        if ($ttl < 0) {
-                                $redis->expire($key, $expire);
-                        }
-
-                        $redis->exec();
-                        echo "permission passed\n";
+                if ($ttl < 0) {
+                        $redis->expire($key, $expire);
                 }
+
+                $redis->exec();
+                echo "permission passed\n";
+        }
 
         $worker->exit();
     }
