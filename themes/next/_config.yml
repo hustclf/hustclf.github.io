@@ -355,12 +355,12 @@ han: false
 
 # Disqus
 disqus:
-  enable: true
+  enable: false
   shortname: hustclf-github-io
   count: true
 
 # Hypercomments
-#hypercomments_id:
+hypercomments_id: 98419
 
 # changyan
 changyan:
