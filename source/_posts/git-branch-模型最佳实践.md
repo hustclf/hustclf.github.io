@@ -1,9 +1,14 @@
 ---
-title: git branch模型最佳实践
+title: git branch模型最佳实践[译]
 date: 2017-12-22 00:15:38
 tags: git branch
 ---
 
+----------
+【原文链接】：
+<a href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model
+</a>
+----------
 
 ## git branch大图
 
@@ -274,5 +279,11 @@ Deleted branch hotfix-1.2.1 (was abbe5d6).
 文章头部的大图对我们的工程开发是极其有用的，它的组织形式是很优雅和浅简易懂的，能够更好的帮助团队成员理解分支开发和发布流程。
 
 获取高清的pdf,点击<a href="http://nvie.com/files/Git-branching-model.pdf">这里</a>
+
+
+
+-------------
+
+【原文链接】：<a href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model</a>
 
 
