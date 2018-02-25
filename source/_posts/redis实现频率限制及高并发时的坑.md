@@ -24,7 +24,7 @@ redis作为如今最流行的缓存软件广泛应用于互联网业务的方方
         // 获取当前的计数器的值。命名为op1(操作1)
         $current = redis->get($key);
 
-        // 如果当前计数器的值不存在且者计数器已经超过限制，返回失败
+        // 如果当前计数器的值存在且计数器已经超过限制，返回失败
         if ($current != null && $current >= $limit) {
             return false;
         } else {
