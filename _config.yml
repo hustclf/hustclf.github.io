@@ -72,7 +72,7 @@ baidusitemap:
     path: baidusitemap.xml
 
 ## Themes: https://hexo.io/themes/
-theme: next
+theme: next-reloaded
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html

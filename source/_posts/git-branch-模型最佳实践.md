@@ -14,7 +14,7 @@ tags: git branch
 
 下图是git branch 模型的全景图，可以先阅读后续章节，最后再回头查看
 
-<img src="http://nvie.com/img/git-model@2x.png">
+<img src="/images/gitflow.png">
 
 <!-- more -->
 
