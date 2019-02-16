@@ -1,4 +1,4 @@
 ---
-title: about
+title: 关于
 date: 2017-11-26 00:48:04
 ---
