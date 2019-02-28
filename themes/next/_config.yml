@@ -520,7 +520,7 @@ baidu_analytics: 417908b35c95bbebe64690e401f7a99a
 disqus:
   enable: true
   shortname: hustclf
-  count: true
+  count: false
   lazyload: false
 
 # Changyan
