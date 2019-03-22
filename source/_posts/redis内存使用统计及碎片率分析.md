@@ -1,7 +1,8 @@
 ---
 title: redis内存使用统计及碎片率分析
-date: 2017-04-11 22:38:36
 tags: redis
+abbrlink: a39640ef
+date: 2017-04-11 22:38:36
 ---
 # 如何获取redis内存使用情况
 redis提供了info命令，可以获取redis内存使用情况。

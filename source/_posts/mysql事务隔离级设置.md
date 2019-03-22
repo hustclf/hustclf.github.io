@@ -1,7 +1,8 @@
 ---
 title: mysql事务隔离级设置
-date: 2017-08-24 11:34:09
 tags: mysql 事务命令
+abbrlink: 43eca55f
+date: 2017-08-24 11:34:09
 ---
 
 ## mysql 事务隔离级设置

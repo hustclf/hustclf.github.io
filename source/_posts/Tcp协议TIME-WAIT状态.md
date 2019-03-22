@@ -1,7 +1,8 @@
 ---
 title: Tcp协议TIME_WAIT状态
-date: 2017-08-13 21:00:20
 tags: tcp/ip
+abbrlink: d4a8876c
+date: 2017-08-13 21:00:20
 ---
 
 ## TIME_WAIT状态

@@ -1,7 +1,8 @@
 ---
-title: git branch模型最佳实践[译]
-date: 2017-12-22 00:15:38
+title: 'git branch模型最佳实践[译]'
 tags: git branch
+abbrlink: c1cadd8e
+date: 2017-12-22 00:15:38
 ---
 
 ----------

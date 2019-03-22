@@ -1,12 +1,13 @@
 ---
 title: 使用logstash将kafka数据写入elasticsearch
+tags:
+  - logstash
+  - kafka
+  - elasticsearch
+categories:
+  - 大数据
+abbrlink: aaa3e6e1
 date: 2019-02-15 01:39:01
-tags: 
-- logstash
-- kafka 
-- elasticsearch
-categories: 
-- 大数据
 ---
 
 ----------
