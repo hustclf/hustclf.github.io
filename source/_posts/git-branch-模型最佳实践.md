@@ -2,6 +2,8 @@
 title: 'git branch模型最佳实践[译]'
 tags: git branch
 abbrlink: c1cadd8e
+categories:
+  - 工程化
 date: 2017-12-22 00:15:38
 ---
 
