@@ -68,6 +68,7 @@ pagination_dir: page
 Plugins:
 - hexo-generator-sitemap
 - hexo-generator-baidu-sitemap
+- hexo-generate-feed
 
 sitemap:
     path: sitemap.xml

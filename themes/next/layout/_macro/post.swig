@@ -342,6 +342,12 @@
     {### END POST BODY ###}
     {#####################}
 
+    {% if not is_index %}
+      <div>
+        {% include 'my-copyright.swig' %}
+      </div>
+    {% endif %}
+
     {% if theme.wechat_subscriber.enabled and not is_index %}
       <div>
         {% include '../_partials/post/wechat-subscriber.swig' %}
@@ -369,12 +375,14 @@
       {% if post.tags and post.tags.length and not is_index %}
         <div class="post-tags">
           {% for tag in post.tags %}
-            <a href="{{ url_for(tag.path) }}" rel="tag"># {{ tag.name }}</a>
+            <a href="{{ url_for(tag.path) }}" rel="tag"><i class="fa fa-tag"></i> {{ tag.name }}</a>
           {% endfor %}
         </div>
       {% endif %}
 
       {% if not is_index %}
+        {% include 'my-copyright.swig' %}
+
       {% if theme.rating.enable or (theme.vkontakte_api.enable and theme.vkontakte_api.like) or (theme.facebook_sdk.enable and theme.facebook_sdk.like_button) or (theme.needmoreshare2.enable and theme.needmoreshare2.postbottom.enable) or (theme.baidushare and theme.baidushare.type === "button") %}
         <div class="post-widgets">
         {% if theme.rating.enable %}
