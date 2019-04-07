@@ -1,12 +1,14 @@
 ---
 title: 为flink-deployer添加cancel job feature
-abbrlink: ebbd7fcc
-categories:
-  - 社区贡献
 tags:
   - flink
   - flink-deployer
+abbrlink: ebbd7fcc
+categories:
+  - 社区贡献
+date: 2019-04-07 22:50:39
 ---
+
 
 # 为flink-deployer添加cancel job feature
 kafkacat是一款go实现的用于部署flink jobs的cli, 它内部集成了flink rest api, 支持对flink job的部署，更新等。
