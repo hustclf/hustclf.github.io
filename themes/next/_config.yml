@@ -181,6 +181,7 @@ social:
   #FB Page: https://www.facebook.com/yourname || facebook
   #VK Group: https://vk.com/yourname || vk
   StackOverflow: https://stackoverflow.com/users/8595519/lifei-chen || stack-overflow
+  Linkedin: https://www.linkedin.com/in/%E5%88%A9%E9%A3%9E-%E9%99%88-b53568122/ || linkedin
   #YouTube: https://youtube.com/yourname || youtube
   #Instagram: https://instagram.com/yourname || instagram
   #Skype: skype:yourname?call|chat || skype
@@ -189,6 +190,7 @@ social_icons:
   enable: true
   icons_only: false
   transition: false
+  Linkedin: linkedin
 
 # Follow me on GitHub banner in right-top corner.
 # Usage: `permalink || title`
