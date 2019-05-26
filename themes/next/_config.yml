@@ -316,7 +316,7 @@ codeblock:
 
 # Wechat Subscriber
 wechat_subscriber:
-  enabled: true
+  enabled: false
   qcode: images/wechat/wechat.jpg
   description: 欢迎订阅我的公众号： 飞哥大杂烩
 
