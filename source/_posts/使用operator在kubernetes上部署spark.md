@@ -19,7 +19,7 @@ Spark是大数据领域极为流行的处理引擎，它拥有丰富的套件和
 Kubernetes是近几年最火的开源项目之一，在经历2018年的快速发展后，kubernetes已经成为容器编排领域的事实标准。 在充分地支持了无状态服务之后，开源社区开始努力解决复杂有状态服务的容器编排，为此提出了operator的概念，用于解决复杂有状态服务的编排。 kubernetes将会全面支持大数据领域的资源编排和管理。
 
 
-Spark在2.3.0版本支持了kubernetes作为原生集群runtime的功能，相关的讨论在<a href="https://issues.apache.org/jira/browse/SPARK-18278">SPARK-18278</a>
+Spark在2.3.0版本支持了kubernetes作为原生集群runtime的功能，相关的讨论在[SPARK-18278](https://issues.apache.org/jira/browse/SPARK-18278)
 
 本文主要基于谷歌云的spark-on-k8s-operator项目，实践在kubernetes集群使用operator部署spark，并运行pyspark demo job。
 
@@ -76,6 +76,6 @@ spark 2.4.0
 
 
 ### 参考
-<a href="https://issues.apache.org/jira/browse/SPARK-18278">spark 2.3.0开始支持kubernetes</a>
-<a href="https://github.com/GoogleCloudPlatform/spark-on-k8s-operator">spark-on-k8s-operator github repo</a>
-<a href="https://github.com/helm/charts/tree/master/incubator/sparkoperator">spark operator chart repo</a>
+[spark 2.3.0开始支持kubernetes](https://issues.apache.org/jira/browse/SPARK-18278)
+[spark-on-k8s-operator github repo](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator)
+[spark operator chart repo](https://github.com/helm/charts/tree/master/incubator/sparkoperator)

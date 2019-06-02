@@ -48,14 +48,14 @@ kafka-connect-elasticseach是confluent（kafka团队的母公司）提供的kafk
 
 相关地址及参考链接如下：
 
-<a href="https://github.com/confluentinc/kafka-connect-elasticsearch">github repo</a>
+[github repo](https://github.com/confluentinc/kafka-connect-elasticsearch)
 
-<a href="https://docs.confluent.io/current/connect/kafka-connect-elasticsearch/index.html">document</a>
+[document](https://docs.confluent.io/current/connect/kafka-connect-elasticsearch/index.html)
 
 ### logstash
 logstash 提供kafka input plugin 和 elasticsearch output plugin, 也支持将kafka数据导入es
 
-<a href="https://www.elastic.co/guide/en/logstash/current/index.html">document</a>
+[document](https://www.elastic.co/guide/en/logstash/current/index.html)
 
 ### 对比
 kafka-connect-elasticsearch是基于kafka connect api实现的plugin，功能强在kafka端，目前该插件对elasticsearch的支持有限，而且迭代也较慢，而且目前部署对devops也不友好，不满足我们需要的功能

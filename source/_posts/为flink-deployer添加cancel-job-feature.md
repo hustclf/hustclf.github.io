@@ -20,13 +20,14 @@ kafkacat是一款go实现的用于部署flink jobs的cli, 它内部集成了flin
 - Updating an existing job
 - Querying Flink queryable state
 
-我也在使用flink-deployer，用于集成ci/cd pipeline中，支持自动部署flink job到kubernetes集群。 但日常开发中，有时候会用到取消job的功能，但目前flink-deployer还不支持，但维护者<a href="https://github.com/ing-bank/flink-deployer/issues/26">支持其他contributor贡献该特性</a>，因此我
+我也在使用flink-deployer，用于集成ci/cd pipeline中，支持自动部署flink job到kubernetes集群。 但日常开发中，有时候会用到取消job的功能，但目前flink-deployer还不支持，但维护者[支持其他contributor贡献该特性](https://github.com/ing-bank/flink-deployer/issues/26)，因此我
 打算贡献该特性，顺便实战入门下golang。
 
 <!-- more -->
 
 ## 调研flink rest api
-flink rest api中提供了terminate flink job的api（<a href="https://ci.apache.org/projects/flink/flink-docs-stable/monitoring/rest_api.html#jobs-jobid-1">链接</a>）, 并且支持两种取消job的模式：
+flink rest api中提供了terminate flink job的api（ [链接]
+(https://ci.apache.org/projects/flink/flink-docs-stable/monitoring/rest_api.html#jobs-jobid-1) ）, 并且支持两种取消job的模式：
 
 - cancel
 
@@ -36,6 +37,4 @@ flink rest api中提供了terminate flink job的api（<a href="https://ci.apache
 
 
 ## pr地址
-<a href="https://github.com/ing-bank/flink-deployer/pull/37">pr</a>
-
-注： 目前该pr还未合进master分支，待maintainer code review 和 approve
+[pr](https://github.com/ing-bank/flink-deployer/pull/37)

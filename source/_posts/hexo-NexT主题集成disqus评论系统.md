@@ -26,7 +26,7 @@ date: 2019-03-27 12:58:25
 
 
 ## 评论系统选择
-NexT主题提供了许多第三方评论系统的集成<a href="https://theme-next.iissnan.com/third-party-services.html">参考</a>，大致有如下几种：
+NexT主题提供了许多第三方评论系统的集成[参考](https://theme-next.iissnan.com/third-party-services.html)，大致有如下几种：
 
 - disqus
 - Facebook Comments：国内技术同学多数没有Facebook的账号，不方便，pass
@@ -47,7 +47,7 @@ NexT主题提供了许多第三方评论系统的集成<a href="https://theme-ne
 有些同学会担心disqus会被墙掉，但目前我的使用而言，没有发现被墙的情况。而且即使被墙了，我觉得也无所谓，不会翻墙的技术同学也不在我的博客受众范围内。
 
 ## 如何集成disqus
-### <a href="https://disqus.com/profile/signup/">注册</a>
+### [注册](https://disqus.com/profile/signup/)
 <img src="/images/disqus/signup.png">
 
 ### 登陆，点击 `GET STARTED` 开始创建站点，之后就可以点击右上角的 Admin 进入后台管理。

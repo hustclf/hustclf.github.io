@@ -12,7 +12,7 @@ redis作为如今最流行的缓存软件广泛应用于互联网业务的方方
 
 ## 一、一种redis实现频率限制的常见方式
 
-<a href="https://redis.io/commands/INCR#pattern-rate-limiter-1">参考redis官网</a>
+参考redis官网</a>[参考redis官网](https://redis.io/commands/INCR#pattern-rate-limiter-1)
 
 常见的有如下的方式来实现，以php为例。
 
@@ -235,4 +235,4 @@ redis执行完这些命令，并且会在t100时刻将结果返回。
 
 (1) 使用lua脚本在redis中实现频率限制的功能。redis是能够保证lua脚本执行的原子性的，并且还将多次网络开销变成一次网络开销，速度上会大大提高
 
-(2) redis 4.0以上版本支持了模块功能，目前官方已经有成熟的频率限制的第三方模块，可以通过<a href="https://redis.io/modules">redis官网-module</a>了解详情。
+(2) redis 4.0以上版本支持了模块功能，目前官方已经有成熟的频率限制的第三方模块，可以通过[redis官网-module](https://redis.io/modules)了解详情。

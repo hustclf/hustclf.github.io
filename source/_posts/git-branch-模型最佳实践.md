@@ -9,8 +9,7 @@ date: 2017-12-22 00:15:38
 
 ----------
 【原文链接】：
-<a href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model
-</a>
+[A successful Git branching model](http://nvie.com/posts/a-successful-git-branching-model/)
 ----------
 
 ## git branch大图
@@ -23,7 +22,7 @@ date: 2017-12-22 00:15:38
 
 ## 为什么使用git
 
-网上已经有很多关于git与集中代码控制软件的讨论，彻底的比较可以参考<a href="https://git.wiki.kernel.org/index.php/GitSvnComparsion">这里</a>。作为一个开发者，相比其他代码管理软件，我更倾向于使用git。git彻底地改变了我们对于分支和合并的概念的认识。用过csv/Subersion的人都清楚，分支和合并的工作是很巨大的，而且会花费很长时间。
+网上已经有很多关于git与集中代码控制软件的讨论，彻底的比较可以参考[这里](https://git.wiki.kernel.org/index.php/GitSvnComparsion)。作为一个开发者，相比其他代码管理软件，我更倾向于使用git。git彻底地改变了我们对于分支和合并的概念的认识。用过csv/Subersion的人都清楚，分支和合并的工作是很巨大的，而且会花费很长时间。
 
 但对于git而言，分支和合并是极其简单和快速的，他们已经成为开发者日常工作流的一部分。因此分支和合并不再为开发者惧怕。
 
@@ -281,12 +280,13 @@ Deleted branch hotfix-1.2.1 (was abbe5d6).
 ## 总结
 文章头部的大图对我们的工程开发是极其有用的，它的组织形式是很优雅和浅简易懂的，能够更好的帮助团队成员理解分支开发和发布流程。
 
-获取高清的pdf,点击<a href="http://nvie.com/files/Git-branching-model.pdf">这里</a>
+获取高清的pdf,点击[这里](http://nvie.com/files/Git-branching-model.pdf)
 
 
 
 -------------
 
-【原文链接】：<a href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model</a>
+【原文链接】：[A successful Git branching model](http://nvie.com/posts/a-successful-git-branching-model/)
+
 
 
