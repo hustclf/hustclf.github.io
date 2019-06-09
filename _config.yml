@@ -79,6 +79,12 @@ baidusitemap:
 ## Themes: https://hexo.io/themes/
 theme: next
 
+baidu_url_submit:
+  count: 100 ## 提交最新的五个链接
+  host: chenlifei.tech ## 百度站长平台中注册的域名
+  token: Cm29TiX2RZVjxB2y ## 准入秘钥
+  path: baidu_urls.txt ## 文本文档的地址， 新idu链接会保存在此文本文档里
+
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
@@ -88,12 +94,12 @@ deploy:
 - type: git
   repo: git@git.dev.tencent.com:hustclf/hustclf.git
   branch: master
+- type: baidu_url_submitter
 
+# 外部链接优化
+nofollow:
+    enable: true
+    #exclude:     # 例外的链接，可将友情链接放置此处
+    #- 'yousite'
 
-
-baidu_url_submit:
-  count: 100 ## 提交最新的五个链接
-  host: chenlifei.tech ## 百度站长平台中注册的域名
-  token: NpJgS1W69IL6zuW8 ## 准入秘钥
-  path: baidu_urls.txt ## 文本文档的地址， 新idu链接会保存在此文本文档里
 

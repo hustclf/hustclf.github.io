@@ -1,24 +1,26 @@
 ---
-title: 社区贡献汇总
-tags:
-  - 文档贡献
-categories:
-  - 社区贡献
-abbrlink: d5f140c7
-date: 2019-03-19 11:16:29
+title: 开源贡献汇总
+date: 2017-11-26 00:48:04
 ---
 
+# 开源贡献汇总
+*以下内容是我写的小工具[that_on_me_on_github](https://github.com/hustclf/that_is_me_on_github)统计的结果。*
 
-# 社区贡献汇总
+## User Info
+username: [Lifei Chen](https://github.com/hustclf)
+
+followers: 11
         
 ## Owned Repostories
-Total: 7
+Total: 8
         
 * [weixinCrawler](https://github.com/hustclf/weixinCrawler), folks: 7
             
 * [RateLimiter](https://github.com/hustclf/RateLimiter), folks: 0
             
 * [PHPRedisSentinel](https://github.com/hustclf/PHPRedisSentinel), folks: 0
+            
+* [that_is_me_on_github](https://github.com/hustclf/that_is_me_on_github), folks: 0
             
 * [kafka-streams-examples](https://github.com/hustclf/kafka-streams-examples), folks: 0
             
@@ -67,7 +69,7 @@ kafkacat
             
 * [Fix bugs for wrong format when consuming message with json format](https://github.com/edenhill/kafkacat/pull/166) \[closed\]
                 
- ## Issues:
+## Issues:
 Total: 4
         
 flink-deployer
@@ -81,4 +83,3 @@ kafkacat
 * [Consume message with json format is invalid](https://github.com/edenhill/kafkacat/issues/167) \[closed\]
                 
 * [kafkacat consumer with json format does not contain timestamp](https://github.com/edenhill/kafkacat/issues/165) \[closed\]
-                

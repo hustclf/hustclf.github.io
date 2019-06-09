@@ -136,6 +136,7 @@ exturl: false
 menu:
   首页: / || home
   关于: /about/ || user
+  开源: /contributions/ || github
   标签: /tags/ || tags
   分类: /categories/ || th
   归档: /archives/ || archive
