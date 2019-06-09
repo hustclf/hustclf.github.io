@@ -12,7 +12,7 @@ timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://hustclf.github.io
+url: https://chenlifei.tech
 root: /
 permalink: posts/:abbrlink/
 permalink_defaults:
@@ -82,14 +82,18 @@ theme: next
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type: git
+- type: git
   repo: git@github.com:hustclf/hustclf.github.io.git
+  branch: master
+- type: git
+  repo: git@git.dev.tencent.com:hustclf/hustclf.git
   branch: master
 
 
+
 baidu_url_submit:
-  count: 20 ## 提交最新的五个链接
-  host: hustclf.github.io ## 百度站长平台中注册的域名
+  count: 100 ## 提交最新的五个链接
+  host: chenlifei.tech ## 百度站长平台中注册的域名
   token: NpJgS1W69IL6zuW8 ## 准入秘钥
-  path: baidu_urls.txt ## 文本文档的地址， 新链接会保存在此文本文档里
+  path: baidu_urls.txt ## 文本文档的地址， 新idu链接会保存在此文本文档里
 
