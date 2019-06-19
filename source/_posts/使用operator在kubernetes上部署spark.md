@@ -23,6 +23,8 @@ Spark在2.3.0版本支持了kubernetes作为原生集群runtime的功能，相�
 
 本文主要基于谷歌云的spark-on-k8s-operator项目，实践在kubernetes集群使用operator部署spark，并运行pyspark demo job。
 
+<!-- more -->
+
 ## 准备
 
 1. kubernetes集群
