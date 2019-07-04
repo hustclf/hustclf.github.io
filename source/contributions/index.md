@@ -10,9 +10,9 @@ date: 2017-11-26 00:48:04
 ## User Info
 username: [Lifei Chen](https://github.com/hustclf)
 
-email: [None](None)
+email: [hustclf@gmail.com](hustclf@gmail.com)
 
-followers: 13
+followers: 14
 
 ![avatar](https://avatars1.githubusercontent.com/u/13963737?v=4 "avatar")
 
@@ -20,7 +20,7 @@ followers: 13
 ## Owned Repostories
 Total: 7
 
-* [that_is_me_on_github](https://github.com/hustclf/that_is_me_on_github), stars: 9, folks: 3
+* [that_is_me_on_github](https://github.com/hustclf/that_is_me_on_github), stars: 15, folks: 3
 
 * [weixinCrawler](https://github.com/hustclf/weixinCrawler), stars: 9, folks: 7
 
@@ -35,11 +35,7 @@ Total: 7
 * [hustclf.github.io](https://github.com/hustclf/hustclf.github.io), stars: 0, folks: 0
 
 ## Pull Requests
-Total: 11
-
-RateLimiter
-
-* [MINOR: update readme](https://github.com/hustclf/RateLimiter/pull/1) \[closed\] \[merged\]
+Total: 12
 
 kafka
 
@@ -53,6 +49,10 @@ kafka
 
 * [MINOR: Document improvement for JMH-Benchmark module](https://github.com/apache/kafka/pull/6682) \[closed\] \[merged\]
 
+faust
+
+* [MINOR: fix bug of example in doc](https://github.com/robinhood/faust/pull/353) \[closed\] \[merged\]
+
 flink-deployer
 
 * [Replace Cancel with Terminate](https://github.com/ing-bank/flink-deployer/pull/37) \[closed\] \[merged\]
@@ -60,6 +60,10 @@ flink-deployer
 * [Support new command: terminate](https://github.com/ing-bank/flink-deployer/pull/36) \[closed\] \[not_merged\]
 
 * [Support new command: terminate](https://github.com/ing-bank/flink-deployer/pull/35) \[closed\] \[not_merged\]
+
+kubeedge
+
+* [doc: optimize slack url in readme and readme_zn](https://github.com/kubeedge/kubeedge/pull/255) \[closed\] \[merged\]
 
 flink
 

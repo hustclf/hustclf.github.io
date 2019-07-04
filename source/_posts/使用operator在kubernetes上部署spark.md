@@ -6,8 +6,7 @@ tags:
   - spark
   - helm
 categories:
-  - 大数据
-  - kubernetes
+  - 云原生
 abbrlink: 320cc8d6
 date: 2019-05-17 11:47:20
 ---
