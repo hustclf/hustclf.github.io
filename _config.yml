@@ -92,7 +92,7 @@ deploy:
   repo: git@github.com:hustclf/hustclf.github.io.git
   branch: master
 - type: git
-  repo: git@git.dev.tencent.com:hustclf/hustclf.git
+  repo: git@e.coding.net:hustclf/hustclf/hustclf.git
   branch: master
 - type: baidu_url_submitter
 
