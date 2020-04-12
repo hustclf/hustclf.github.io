@@ -92,7 +92,7 @@ deploy:
   repo: git@github.com:hustclf/hustclf.github.io.git
   branch: master
 - type: git
-  repo: git@e.coding.net:hustclf/hustclf/hustclf.git
+  repo: git@e.coding.net:hustclf/blog/blog.git
   branch: master
 - type: baidu_url_submitter
 
@@ -101,5 +101,4 @@ nofollow:
     enable: true
     #exclude:     # 例外的链接，可将友情链接放置此处
     #- 'yousite'
-
 
