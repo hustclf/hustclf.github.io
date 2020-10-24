@@ -1,25 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>helm 快速上手指南</title>
-    <url>/posts/ffd854fe/</url>
-    <content><![CDATA[<h1 id="helm-快速上手指南"><a href="#helm-快速上手指南" class="headerlink" title="helm 快速上手指南"></a>helm 快速上手指南</h1><h2 id="helm"><a href="#helm" class="headerlink" title="helm"></a>helm</h2><p>helm是管理部署在k8s上的应用的工具。helm 之于 k8s，如同apt 之于 ubuntu、 docker-compose 之于 docker。</p>
-<p>假如我们希望在ubuntu安装vim， 我们会使用 <code>apt install vim</code>， 那如果我们要在k8s上部署一套复杂的paas服务（如lnmp），要如何操作呢？</p>
-<p>我们可以使用helm来将lnmp服务定义为一个k8s 应用，打成一个chart包，然后通过helm就可以在k8s上一键拉取lnmp服务。</p>
-<a id="more"></a>
-
-<h2 id="helm-是如何工作的"><a href="#helm-是如何工作的" class="headerlink" title="helm 是如何工作的"></a>helm 是如何工作的</h2><p>helm 在v3版本之前由两部分组成： helm 和 tiller。 helm作为cli，提供用户操作的入口，tiller作为server，响应用户请求及保存应用状态信息，使用体验很差。helm 在v3版本就是一个纯粹的cli。 所有的状态都交由k8s管理，简便性提升很多。</p>
-<p>helm 大致的工作架构如下：<br>此处补个图</p>
-<h2 id="helm-chart包结构介绍"><a href="#helm-chart包结构介绍" class="headerlink" title="helm chart包结构介绍"></a>helm chart包结构介绍</h2><h2 id="helm-常用命令及插件"><a href="#helm-常用命令及插件" class="headerlink" title="helm 常用命令及插件"></a>helm 常用命令及插件</h2><p>helm install<br>helm upgrade<br>helm rollback</p>
-<p>helm diff</p>
-<h2 id="helm-charts如何进行分发"><a href="#helm-charts如何进行分发" class="headerlink" title="helm charts如何进行分发"></a>helm charts如何进行分发</h2><p>helm oci</p>
-]]></content>
-      <tags>
-        <tag>helm</tag>
-        <tag>chart</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>使用lua扩展redis</title>
     <url>/posts/aa165f30/</url>
     <content><![CDATA[<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>redis提供了丰富的命令，也支持 MULTI 打包执行多个命令，但仍不能完全满足业务需求。<br>比如我希望使用 zset 实现一个delay queue，member的score存储该数据下次执行的时间戳。希望有一个zpoprange的原子操作，按照score的min max范围，返回符合条件的members，并从zset删除这些members。<br>redis zset 原生命令无法支持。需要使用lua扩展该命令。</p>
@@ -221,17 +202,17 @@
 <h3 id="版本说明"><a href="#版本说明" class="headerlink" title="版本说明"></a>版本说明</h3><p>kubernetes 1.14.0<br>spark 2.4.0</p>
 <h2 id="使用helm安装spark-operator"><a href="#使用helm安装spark-operator" class="headerlink" title="使用helm安装spark operator"></a>使用helm安装spark operator</h2><ol>
 <li><p>下载charts</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> git clone https://github.com/helm/charts.git</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/helm/charts.git</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>install spark operator</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> helm install --name=spark incubator/sparkoperator --namespace spark-operator --set sparkJobNamespace=spark-jobs --set serviceAccounts.spark.name=spark</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> helm install --name=spark incubator/sparkoperator --namespace spark-operator --<span class="built_in">set</span> sparkJobNamespace=spark-jobs --<span class="built_in">set</span> serviceAccounts.spark.name=spark</span></span><br></pre></td></tr></table></figure>
 
 </li>
 </ol>
 <p>该命令将会在<code>spark-operator</code>命名空间下运行一个operator pod， 并且会监听<code>spark-jobs</code>命名空间下提交的spark job。</p>
 <h2 id="运行pyspark-pi"><a href="#运行pyspark-pi" class="headerlink" title="运行pyspark-pi"></a>运行pyspark-pi</h2><ol>
 <li><p>下载spark-on-k8s-operator</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> git clone https://github.com/GoogleCloudPlatform/spark-on-k8s-operator.git</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/GoogleCloudPlatform/spark-on-k8s-operator.git</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>运行pyspark-pi</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># kubectl apply -f examples/spark-py-pi.yaml</span><br></pre></td></tr></table></figure>
