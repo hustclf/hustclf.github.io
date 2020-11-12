@@ -20,7 +20,7 @@
   </script>
 
   <meta name="description" content="目标将kafka中的日志写入elasticsearch，并要求支持以下功能：  根据日志时间建立index，便于后续对index的管理 使用log_id作为document_id，保持写入es的幂等性 对建立的多个index, 设置相同的alias （业务方使用alias进行query，对具体index不感知） 由于日志时间为epoch_seconds，无法被es自动引用为时间，需要进行字段ma">
-<meta name="keywords" content="logstash,kafka,elasticsearch">
+<meta name="keywords" content="kafka,logstash,elasticsearch">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用logstash将kafka数据写入elasticsearch">
 <meta property="og:url" content="https://hustclf.github.io/posts/aaa3e6e1/index.html">
@@ -330,8 +330,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/logstash/" rel="tag"># logstash</a>
               <a href="/tags/kafka/" rel="tag"># kafka</a>
+              <a href="/tags/logstash/" rel="tag"># logstash</a>
               <a href="/tags/elasticsearch/" rel="tag"># elasticsearch</a>
           </div>
 
@@ -437,7 +437,7 @@
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-count">31</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
