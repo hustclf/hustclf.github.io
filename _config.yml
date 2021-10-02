@@ -91,9 +91,8 @@ deploy:
 - type: git
   repo: git@github.com:hustclf/hustclf.github.io.git
   branch: master
-- type: git
-  repo: git@e.coding.net:hustclf/blog/blog.git
-  branch: master
+  name: hustclf
+  email: hustclf@gmail.com
 - type: baidu_url_submitter
 
 # 外部链接优化
