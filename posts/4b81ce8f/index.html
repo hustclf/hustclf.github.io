@@ -16,26 +16,26 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"chenlifei.tech","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"hustclf.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="一种使用redis实现频率限制的错误方式及解释redis作为如今最流行的缓存软件广泛应用于互联网业务的方方面面，而频率限制又是很常见的业务场景，如常见的投票、抢购、秒杀等场景。redis由于全部基于内存操作，在读写性能上表现相当给力，因此很多业务中都使用redis来实现频率限制。 网上的教程已经汗牛充栋，我这里仅简单地介绍下原理，然后重点介绍下在高并发场景下，简单地使用redis将不能保证操作的原">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一种使用redis实现频率限制的错误方式及解释">
-<meta property="og:url" content="https://chenlifei.tech/posts/4b81ce8f/index.html">
+<meta property="og:url" content="https://hustclf.github.io/posts/4b81ce8f/index.html">
 <meta property="og:site_name" content="大飞哥的博客">
 <meta property="og:description" content="一种使用redis实现频率限制的错误方式及解释redis作为如今最流行的缓存软件广泛应用于互联网业务的方方面面，而频率限制又是很常见的业务场景，如常见的投票、抢购、秒杀等场景。redis由于全部基于内存操作，在读写性能上表现相当给力，因此很多业务中都使用redis来实现频率限制。 网上的教程已经汗牛充栋，我这里仅简单地介绍下原理，然后重点介绍下在高并发场景下，简单地使用redis将不能保证操作的原">
 <meta property="og:locale">
-<meta property="og:image" content="https://chenlifei.tech/images/swoole.png">
-<meta property="og:image" content="https://chenlifei.tech/images/redis.png">
+<meta property="og:image" content="https://hustclf.github.io/images/swoole.png">
+<meta property="og:image" content="https://hustclf.github.io/images/redis.png">
 <meta property="article:published_time" content="2017-09-18T14:38:36.000Z">
 <meta property="article:modified_time" content="2021-06-14T01:12:32.910Z">
 <meta property="article:author" content="大飞哥">
 <meta property="article:tag" content="redis 频率限制 高并发">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://chenlifei.tech/images/swoole.png">
+<meta name="twitter:image" content="https://hustclf.github.io/images/swoole.png">
 
-<link rel="canonical" href="https://chenlifei.tech/posts/4b81ce8f/">
+<link rel="canonical" href="https://hustclf.github.io/posts/4b81ce8f/">
 
 
 <script id="page-configurations">
@@ -203,7 +203,7 @@
   
   
   <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="https://chenlifei.tech/posts/4b81ce8f/">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/4b81ce8f/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -545,7 +545,7 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "https://chenlifei.tech/posts/4b81ce8f/";
+    this.page.url = "https://hustclf.github.io/posts/4b81ce8f/";
     this.page.identifier = "posts/4b81ce8f/";
     this.page.title = "一种使用redis实现频率限制的错误方式及解释";
     };

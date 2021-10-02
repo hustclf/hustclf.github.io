@@ -5,9 +5,9 @@
   <subtitle>借书满架，偃仰啸歌，冥然兀坐，万籁有声</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="https://chenlifei.tech/"/>
+  <link href="https://hustclf.github.io/"/>
   <updated>2021-10-02T11:21:27.001Z</updated>
-  <id>https://chenlifei.tech/</id>
+  <id>https://hustclf.github.io/</id>
   
   <author>
     <name>大飞哥</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>cross: rust 的跨平台编译利器</title>
-    <link href="https://chenlifei.tech/posts/3d1fe733/"/>
-    <id>https://chenlifei.tech/posts/3d1fe733/</id>
+    <link href="https://hustclf.github.io/posts/3d1fe733/"/>
+    <id>https://hustclf.github.io/posts/3d1fe733/</id>
     <published>2021-10-02T10:27:56.000Z</published>
     <updated>2021-10-02T11:21:27.001Z</updated>
     
@@ -41,21 +41,21 @@
     </summary>
     
     
-      <category term="rust" scheme="https://chenlifei.tech/categories/rust/"/>
+      <category term="rust" scheme="https://hustclf.github.io/categories/rust/"/>
     
     
-      <category term="rust" scheme="https://chenlifei.tech/tags/rust/"/>
+      <category term="rust" scheme="https://hustclf.github.io/tags/rust/"/>
     
-      <category term="cross" scheme="https://chenlifei.tech/tags/cross/"/>
+      <category term="cross" scheme="https://hustclf.github.io/tags/cross/"/>
     
-      <category term="跨平台编译" scheme="https://chenlifei.tech/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/"/>
+      <category term="跨平台编译" scheme="https://hustclf.github.io/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/"/>
     
   </entry>
   
   <entry>
     <title>docker实战：原理篇</title>
-    <link href="https://chenlifei.tech/posts/6d66e529/"/>
-    <id>https://chenlifei.tech/posts/6d66e529/</id>
+    <link href="https://hustclf.github.io/posts/6d66e529/"/>
+    <id>https://hustclf.github.io/posts/6d66e529/</id>
     <published>2019-07-04T04:45:19.000Z</published>
     <updated>2021-06-14T01:12:32.909Z</updated>
     
@@ -78,17 +78,17 @@
     </summary>
     
     
-      <category term="云原生" scheme="https://chenlifei.tech/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
+      <category term="云原生" scheme="https://hustclf.github.io/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
     
     
-      <category term="docker" scheme="https://chenlifei.tech/tags/docker/"/>
+      <category term="docker" scheme="https://hustclf.github.io/tags/docker/"/>
     
   </entry>
   
   <entry>
     <title>that_is_me_on_github: 一个统计github contribution的小工具</title>
-    <link href="https://chenlifei.tech/posts/8499e970/"/>
-    <id>https://chenlifei.tech/posts/8499e970/</id>
+    <link href="https://hustclf.github.io/posts/8499e970/"/>
+    <id>https://hustclf.github.io/posts/8499e970/</id>
     <published>2019-06-18T07:33:33.000Z</published>
     <updated>2021-06-14T01:12:32.910Z</updated>
     
@@ -104,17 +104,17 @@
     </summary>
     
     
-      <category term="社区贡献" scheme="https://chenlifei.tech/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/"/>
+      <category term="社区贡献" scheme="https://hustclf.github.io/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/"/>
     
     
-      <category term="that_is_me_on_github" scheme="https://chenlifei.tech/tags/that-is-me-on-github/"/>
+      <category term="that_is_me_on_github" scheme="https://hustclf.github.io/tags/that-is-me-on-github/"/>
     
   </entry>
   
   <entry>
     <title>使用operator在kubernetes上部署spark</title>
-    <link href="https://chenlifei.tech/posts/320cc8d6/"/>
-    <id>https://chenlifei.tech/posts/320cc8d6/</id>
+    <link href="https://hustclf.github.io/posts/320cc8d6/"/>
+    <id>https://hustclf.github.io/posts/320cc8d6/</id>
     <published>2019-05-17T03:47:20.000Z</published>
     <updated>2021-06-14T01:12:32.911Z</updated>
     
@@ -130,23 +130,23 @@
     </summary>
     
     
-      <category term="云原生" scheme="https://chenlifei.tech/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
+      <category term="云原生" scheme="https://hustclf.github.io/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
     
     
-      <category term="kubernetes" scheme="https://chenlifei.tech/tags/kubernetes/"/>
+      <category term="kubernetes" scheme="https://hustclf.github.io/tags/kubernetes/"/>
     
-      <category term="operator" scheme="https://chenlifei.tech/tags/operator/"/>
+      <category term="operator" scheme="https://hustclf.github.io/tags/operator/"/>
     
-      <category term="spark" scheme="https://chenlifei.tech/tags/spark/"/>
+      <category term="spark" scheme="https://hustclf.github.io/tags/spark/"/>
     
-      <category term="helm" scheme="https://chenlifei.tech/tags/helm/"/>
+      <category term="helm" scheme="https://hustclf.github.io/tags/helm/"/>
     
   </entry>
   
   <entry>
     <title>为flink-deployer添加cancel job feature</title>
-    <link href="https://chenlifei.tech/posts/ebbd7fcc/"/>
-    <id>https://chenlifei.tech/posts/ebbd7fcc/</id>
+    <link href="https://hustclf.github.io/posts/ebbd7fcc/"/>
+    <id>https://hustclf.github.io/posts/ebbd7fcc/</id>
     <published>2019-04-07T14:50:39.000Z</published>
     <updated>2021-06-14T01:12:32.910Z</updated>
     
@@ -167,19 +167,19 @@
     </summary>
     
     
-      <category term="社区贡献" scheme="https://chenlifei.tech/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/"/>
+      <category term="社区贡献" scheme="https://hustclf.github.io/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/"/>
     
     
-      <category term="flink" scheme="https://chenlifei.tech/tags/flink/"/>
+      <category term="flink" scheme="https://hustclf.github.io/tags/flink/"/>
     
-      <category term="flink-deployer" scheme="https://chenlifei.tech/tags/flink-deployer/"/>
+      <category term="flink-deployer" scheme="https://hustclf.github.io/tags/flink-deployer/"/>
     
   </entry>
   
   <entry>
     <title>hexo NexT主题集成disqus评论系统</title>
-    <link href="https://chenlifei.tech/posts/8838407/"/>
-    <id>https://chenlifei.tech/posts/8838407/</id>
+    <link href="https://hustclf.github.io/posts/8838407/"/>
+    <id>https://hustclf.github.io/posts/8838407/</id>
     <published>2019-03-27T04:58:25.000Z</published>
     <updated>2021-06-14T01:12:32.910Z</updated>
     
@@ -192,21 +192,21 @@
     </summary>
     
     
-      <category term="博客" scheme="https://chenlifei.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+      <category term="博客" scheme="https://hustclf.github.io/categories/%E5%8D%9A%E5%AE%A2/"/>
     
     
-      <category term="hexo" scheme="https://chenlifei.tech/tags/hexo/"/>
+      <category term="hexo" scheme="https://hustclf.github.io/tags/hexo/"/>
     
-      <category term="next" scheme="https://chenlifei.tech/tags/next/"/>
+      <category term="next" scheme="https://hustclf.github.io/tags/next/"/>
     
-      <category term="评论系统" scheme="https://chenlifei.tech/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/"/>
+      <category term="评论系统" scheme="https://hustclf.github.io/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/"/>
     
   </entry>
   
   <entry>
     <title>使用logstash将kafka数据写入elasticsearch</title>
-    <link href="https://chenlifei.tech/posts/aaa3e6e1/"/>
-    <id>https://chenlifei.tech/posts/aaa3e6e1/</id>
+    <link href="https://hustclf.github.io/posts/aaa3e6e1/"/>
+    <id>https://hustclf.github.io/posts/aaa3e6e1/</id>
     <published>2019-02-14T17:39:01.000Z</published>
     <updated>2021-06-14T01:12:32.911Z</updated>
     
@@ -230,21 +230,21 @@
     </summary>
     
     
-      <category term="大数据" scheme="https://chenlifei.tech/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+      <category term="大数据" scheme="https://hustclf.github.io/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
     
     
-      <category term="logstash" scheme="https://chenlifei.tech/tags/logstash/"/>
+      <category term="logstash" scheme="https://hustclf.github.io/tags/logstash/"/>
     
-      <category term="kafka" scheme="https://chenlifei.tech/tags/kafka/"/>
+      <category term="kafka" scheme="https://hustclf.github.io/tags/kafka/"/>
     
-      <category term="elasticsearch" scheme="https://chenlifei.tech/tags/elasticsearch/"/>
+      <category term="elasticsearch" scheme="https://hustclf.github.io/tags/elasticsearch/"/>
     
   </entry>
   
   <entry>
     <title>修复kafkacat json format的bug</title>
-    <link href="https://chenlifei.tech/posts/66a1e560/"/>
-    <id>https://chenlifei.tech/posts/66a1e560/</id>
+    <link href="https://hustclf.github.io/posts/66a1e560/"/>
+    <id>https://hustclf.github.io/posts/66a1e560/</id>
     <published>2019-01-19T03:16:29.000Z</published>
     <updated>2021-06-14T01:12:32.911Z</updated>
     
@@ -257,17 +257,17 @@
     </summary>
     
     
-      <category term="社区贡献" scheme="https://chenlifei.tech/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/"/>
+      <category term="社区贡献" scheme="https://hustclf.github.io/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/"/>
     
     
-      <category term="kafkacat" scheme="https://chenlifei.tech/tags/kafkacat/"/>
+      <category term="kafkacat" scheme="https://hustclf.github.io/tags/kafkacat/"/>
     
   </entry>
   
   <entry>
     <title>git branch模型最佳实践[译]</title>
-    <link href="https://chenlifei.tech/posts/c1cadd8e/"/>
-    <id>https://chenlifei.tech/posts/c1cadd8e/</id>
+    <link href="https://hustclf.github.io/posts/c1cadd8e/"/>
+    <id>https://hustclf.github.io/posts/c1cadd8e/</id>
     <published>2017-12-21T16:15:38.000Z</published>
     <updated>2021-06-14T01:12:32.909Z</updated>
     
@@ -284,17 +284,17 @@
     </summary>
     
     
-      <category term="工程化" scheme="https://chenlifei.tech/categories/%E5%B7%A5%E7%A8%8B%E5%8C%96/"/>
+      <category term="工程化" scheme="https://hustclf.github.io/categories/%E5%B7%A5%E7%A8%8B%E5%8C%96/"/>
     
     
-      <category term="git branch" scheme="https://chenlifei.tech/tags/git-branch/"/>
+      <category term="git branch" scheme="https://hustclf.github.io/tags/git-branch/"/>
     
   </entry>
   
   <entry>
     <title>一种使用redis实现频率限制的错误方式及解释</title>
-    <link href="https://chenlifei.tech/posts/4b81ce8f/"/>
-    <id>https://chenlifei.tech/posts/4b81ce8f/</id>
+    <link href="https://hustclf.github.io/posts/4b81ce8f/"/>
+    <id>https://hustclf.github.io/posts/4b81ce8f/</id>
     <published>2017-09-18T14:38:36.000Z</published>
     <updated>2021-06-14T01:12:32.910Z</updated>
     
@@ -309,14 +309,14 @@
     
     
     
-      <category term="redis 频率限制 高并发" scheme="https://chenlifei.tech/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
+      <category term="redis 频率限制 高并发" scheme="https://hustclf.github.io/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     
   </entry>
   
   <entry>
     <title>mysql事务隔离级设置</title>
-    <link href="https://chenlifei.tech/posts/43eca55f/"/>
-    <id>https://chenlifei.tech/posts/43eca55f/</id>
+    <link href="https://hustclf.github.io/posts/43eca55f/"/>
+    <id>https://hustclf.github.io/posts/43eca55f/</id>
     <published>2017-08-24T03:34:09.000Z</published>
     <updated>2021-06-14T01:12:32.910Z</updated>
     
@@ -332,14 +332,14 @@
     
     
     
-      <category term="mysql 事务命令" scheme="https://chenlifei.tech/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/"/>
+      <category term="mysql 事务命令" scheme="https://hustclf.github.io/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/"/>
     
   </entry>
   
   <entry>
     <title>Tcp协议TIME_WAIT状态</title>
-    <link href="https://chenlifei.tech/posts/d4a8876c/"/>
-    <id>https://chenlifei.tech/posts/d4a8876c/</id>
+    <link href="https://hustclf.github.io/posts/d4a8876c/"/>
+    <id>https://hustclf.github.io/posts/d4a8876c/</id>
     <published>2017-08-13T13:00:20.000Z</published>
     <updated>2021-06-14T01:12:32.909Z</updated>
     
@@ -356,14 +356,14 @@
     
     
     
-      <category term="tcp/ip" scheme="https://chenlifei.tech/tags/tcp-ip/"/>
+      <category term="tcp/ip" scheme="https://hustclf.github.io/tags/tcp-ip/"/>
     
   </entry>
   
   <entry>
     <title>redis内存使用统计及碎片率分析</title>
-    <link href="https://chenlifei.tech/posts/a39640ef/"/>
-    <id>https://chenlifei.tech/posts/a39640ef/</id>
+    <link href="https://hustclf.github.io/posts/a39640ef/"/>
+    <id>https://hustclf.github.io/posts/a39640ef/</id>
     <published>2017-04-11T14:38:36.000Z</published>
     <updated>2021-06-14T01:12:32.910Z</updated>
     
@@ -388,7 +388,7 @@
     
     
     
-      <category term="redis" scheme="https://chenlifei.tech/tags/redis/"/>
+      <category term="redis" scheme="https://hustclf.github.io/tags/redis/"/>
     
   </entry>
   

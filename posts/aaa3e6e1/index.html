@@ -16,13 +16,13 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"chenlifei.tech","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"hustclf.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="目标将kafka中的日志写入elasticsearch，并要求支持以下功能：  根据日志时间建立index，便于后续对index的管理 使用log_id作为document_id，保持写入es的幂等性 对建立的多个index, 设置相同的alias （业务方使用alias进行query，对具体index不感知） 由于日志时间为epoch_seconds，无法被es自动引用为时间，需要进行字段ma">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用logstash将kafka数据写入elasticsearch">
-<meta property="og:url" content="https://chenlifei.tech/posts/aaa3e6e1/index.html">
+<meta property="og:url" content="https://hustclf.github.io/posts/aaa3e6e1/index.html">
 <meta property="og:site_name" content="大飞哥的博客">
 <meta property="og:description" content="目标将kafka中的日志写入elasticsearch，并要求支持以下功能：  根据日志时间建立index，便于后续对index的管理 使用log_id作为document_id，保持写入es的幂等性 对建立的多个index, 设置相同的alias （业务方使用alias进行query，对具体index不感知） 由于日志时间为epoch_seconds，无法被es自动引用为时间，需要进行字段ma">
 <meta property="og:locale">
@@ -34,7 +34,7 @@
 <meta property="article:tag" content="elasticsearch">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://chenlifei.tech/posts/aaa3e6e1/">
+<link rel="canonical" href="https://hustclf.github.io/posts/aaa3e6e1/">
 
 
 <script id="page-configurations">
@@ -202,7 +202,7 @@
   
   
   <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="https://chenlifei.tech/posts/aaa3e6e1/">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/aaa3e6e1/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -556,7 +556,7 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "https://chenlifei.tech/posts/aaa3e6e1/";
+    this.page.url = "https://hustclf.github.io/posts/aaa3e6e1/";
     this.page.identifier = "posts/aaa3e6e1/";
     this.page.title = "使用logstash将kafka数据写入elasticsearch";
     };
