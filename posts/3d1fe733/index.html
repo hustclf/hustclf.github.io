@@ -1,272 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  
-  <title>cross: rust 的跨平台编译利器 | 大飞哥的博客</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1. cross 介绍cross 是 0 配置的 Rust 跨平台编译工具，它有着使用简单、功能强大的特点，极大地方便了 rust 跨平台项目的构建、测试和发布。 2. cargo 跨平台编译及问题2.1 cargo 跨平台编译cargo 本身支持跨平台编译，一般使用有如下命令：  查看 target 列表rustup target list  安装新的 target，以 i686-unknown">
-<meta property="og:type" content="article">
-<meta property="og:title" content="cross: rust 的跨平台编译利器">
-<meta property="og:url" content="https://hustclf.github.io/posts/3d1fe733/index.html">
-<meta property="og:site_name" content="大飞哥的博客">
-<meta property="og:description" content="1. cross 介绍cross 是 0 配置的 Rust 跨平台编译工具，它有着使用简单、功能强大的特点，极大地方便了 rust 跨平台项目的构建、测试和发布。 2. cargo 跨平台编译及问题2.1 cargo 跨平台编译cargo 本身支持跨平台编译，一般使用有如下命令：  查看 target 列表rustup target list  安装新的 target，以 i686-unknown">
-<meta property="og:locale">
-<meta property="article:published_time" content="2021-10-02T10:27:56.000Z">
-<meta property="article:modified_time" content="2021-10-02T11:21:27.001Z">
-<meta property="article:author" content="大飞哥">
-<meta property="article:tag" content="rust">
-<meta property="article:tag" content="cross">
-<meta property="article:tag" content="跨平台编译">
-<meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+{% extends '_layout.swig' %}
+{% import '_macro/post.swig' as post_template %}
+{% import '_macro/sidebar.swig' as sidebar_template %}
 
-  
 
-<meta name="generator" content="Hexo 5.4.0"></head>
+{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
 
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">大飞哥的博客</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hustclf.github.io"></form>
-      </div>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-cross-rust-的跨平台编译利器" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/posts/3d1fe733/" class="article-date">
-  <time datetime="2021-10-02T10:27:56.000Z" itemprop="datePublished">2021-10-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/rust/">rust</a>
-  </div>
+{% block page_class %}page-post-detail{% endblock %}
 
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      cross: rust 的跨平台编译利器
-    </h1>
-  
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="1-cross-介绍"><a href="#1-cross-介绍" class="headerlink" title="1. cross 介绍"></a>1. cross 介绍</h2><p>cross 是 <code>0</code> 配置的 Rust 跨平台编译工具，它有着使用简单、功能强大的特点，极大地方便了 rust 跨平台项目的构建、测试和发布。</p>
-<h2 id="2-cargo-跨平台编译及问题"><a href="#2-cargo-跨平台编译及问题" class="headerlink" title="2. cargo 跨平台编译及问题"></a>2. cargo 跨平台编译及问题</h2><h3 id="2-1-cargo-跨平台编译"><a href="#2-1-cargo-跨平台编译" class="headerlink" title="2.1 cargo 跨平台编译"></a>2.1 cargo 跨平台编译</h3><p>cargo 本身支持跨平台编译，一般使用有如下命令：</p>
-<ul>
-<li><p>查看 target 列表<br><code>rustup target list</code></p>
-</li>
-<li><p>安装新的 target，以 <code>i686-unknown-linux-gnu</code> 为例<br><code>rustup target add i686-unknown-linux-gnu</code></p>
-</li>
-<li><p>编译 linux 32 gpu 的产物<br><code>cargo build --release --target i686-unknown-linux-gnu</code></p>
-</li>
-</ul>
-<span id="more"></span>
+{% block content %}
 
-<h3 id="2-2-问题"><a href="#2-2-问题" class="headerlink" title="2.2 问题"></a>2.2 问题</h3><p>以上编译产物是非静态的二进制，运行时会对动态环境有依赖，如依赖 libc.so、依赖 libssl.so 等，以下是对某个 rust 编写的 agent 使用 <code>x86_64-unknown-linux-gnu</code> 编译产物的依赖：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># ldd agent</span><br><span class="line">        linux-vdso.so.1 =&gt;  (0x00007fffa0b6f000)</span><br><span class="line">        /$LIB/libonion.so =&gt; /lib64/libonion.so (0x00007f6ce530f000)</span><br><span class="line">        libgcc_s.so.1 =&gt; /lib64/libgcc_s.so.1 (0x00007f6ce3819000)</span><br><span class="line">        librt.so.1 =&gt; /lib64/librt.so.1 (0x00007f6ce3611000)</span><br><span class="line">        libpthread.so.0 =&gt; /lib64/libpthread.so.0 (0x00007f6ce33f5000)</span><br><span class="line">        libm.so.6 =&gt; /lib64/libm.so.6 (0x00007f6ce30f3000)</span><br><span class="line">        libdl.so.2 =&gt; /lib64/libdl.so.2 (0x00007f6ce2eef000)</span><br><span class="line">        libc.so.6 =&gt; /lib64/libc.so.6 (0x00007f6ce2b21000)</span><br><span class="line">        /lib64/ld-linux-x86-64.so.2 (0x00007f6ce51f6000)</span><br></pre></td></tr></table></figure>
+  <div id="posts" class="posts-expand">
+    {{ post_template.render(page) }}
 
-<p>而对于在运行客户环境的 agent，要尽量减少外部的依赖，因此 agent 需要编译为纯静态的二进制， 即编译target 为 <code>x86_64-unknown-linux-musl</code>, 此时使用 cargo 进行编译就不方便了。</p>
-<p>如果使用 musl 的方式编译，需要依赖 musl libc 和 musl-gcc。<br>参考： <a target="_blank" rel="external nofollow noopener noreferrer" href="https://rustwiki.org/zh-CN/edition-guide/rust-2018/platform-and-target-support/musl-support-for-fully-static-binaries.html#musl-%E6%94%AF%E6%8C%81%E5%AE%8C%E5%85%A8%E9%9D%99%E6%80%81%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6">https://rustwiki.org/zh-CN/edition-guide/rust-2018/platform-and-target-support/musl-support-for-fully-static-binaries.html#musl-%E6%94%AF%E6%8C%81%E5%AE%8C%E5%85%A8%E9%9D%99%E6%80%81%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6</a></p>
-<p>如果要支持多平台的产物编译，除了要安装对应的musl target，还需要各个平台的 musl libc 和 musl-gcc 版本，搭建跨平台编译环境就很不方便了。</p>
-<h2 id="3-cross-进行跨平台编译"><a href="#3-cross-进行跨平台编译" class="headerlink" title="3. cross 进行跨平台编译"></a>3. cross 进行跨平台编译</h2><p>于是 <code>cross</code> 就应运而生了，它通过容器技术屏蔽了各个环境编译依赖的细节，实现了 <code>0</code> 配置的跨平台编译体验，而且保持了同 cargo 一致的体验。</p>
-<p>演示如下：</p>
-<h3 id="3-1-安装-cross"><a href="#3-1-安装-cross" class="headerlink" title="3.1 安装 cross"></a>3.1 安装 cross</h3><p><code>crago install cross</code><br>之后就可以使用 <code>cross</code> 替换到 <code>cargo</code> 命令了。</p>
-<h3 id="3-2-编译-x86-64-unknown-linux-musl"><a href="#3-2-编译-x86-64-unknown-linux-musl" class="headerlink" title="3.2 编译 x86_64-unknown-linux-musl"></a>3.2 编译 <code>x86_64-unknown-linux-musl</code></h3><p><code>cross build --release --target x86_64-unknown-linux-musl</code></p>
-<p>cross 会根据 target 拉取对应的容器镜像，然后在容器镜像内部进行编译， 编译的产物也会挂载在本机的 <code>target/x86_64-unknown-linux-musl</code> 目录下。</p>
-<p>有了 <code>cross</code>，就不用再纠结于各个 target 的复杂依赖，可以很清爽的进行跨平台编译了。</p>
-<h2 id="4-cross-实现原理"><a href="#4-cross-实现原理" class="headerlink" title="4. cross 实现原理"></a>4. cross 实现原理</h2><p>那么 <code>cross</code> 是如何实现的呢？<br>主要有两点：</p>
-<ul>
-<li>使用容器镜像屏蔽了各平台的依赖细节</li>
-<li>内部调用 <code>cargo</code> 保证了 cross 与 cargo 命令完全一致的使用体验<h3 id="4-1-使用容器镜像屏蔽了各平台的依赖细节"><a href="#4-1-使用容器镜像屏蔽了各平台的依赖细节" class="headerlink" title="4.1 使用容器镜像屏蔽了各平台的依赖细节"></a>4.1 使用容器镜像屏蔽了各平台的依赖细节</h3>以 <code>target/x86_64-unknown-linux-musl</code> 为例， 执行 cross build 时，cross 会拉取该 target 对应的镜像，并在镜像中执行 cargo build 的命令，该 target 的镜像的 dockerfile 里封装了依赖的细节。</li>
-</ul>
-<p>Dockerfile.x86_64-unknown-linux-musl</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># 基础镜像</span><br><span class="line">FROM ubuntu:20.04</span><br><span class="line"></span><br><span class="line"># 安装基本的lib，如 gcc、make git 等</span><br><span class="line">COPY common.sh lib.sh /</span><br><span class="line">RUN /common.sh</span><br><span class="line"></span><br><span class="line"># 安装 cmake</span><br><span class="line">COPY cmake.sh /</span><br><span class="line">RUN /cmake.sh</span><br><span class="line"></span><br><span class="line"># 安装 xargo</span><br><span class="line">COPY xargo.sh /</span><br><span class="line">RUN /xargo.sh</span><br><span class="line"></span><br><span class="line"># 编译 musl-gcc</span><br><span class="line">COPY musl.sh /</span><br><span class="line">RUN /musl.sh TARGET=x86_64-linux-musl</span><br><span class="line"></span><br><span class="line"># 设置 target 和 链接器</span><br><span class="line">ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=x86_64-linux-musl-gcc \</span><br><span class="line">    CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc \</span><br><span class="line">    CXX_x86_64_unknown_linux_musl=x86_64-linux-musl-g++</span><br></pre></td></tr></table></figure>
-
-<p>感兴趣的可以看下各脚本的实现细节：<br><a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/rust-embedded/cross/blob/master/docker/Dockerfile.x86_64-unknown-linux-musl">dockerfile 地址</a></p>
-<h3 id="4-2-内部调用-cargo-保证了-cross-与-cargo-命令完全一致的使用体验"><a href="#4-2-内部调用-cargo-保证了-cross-与-cargo-命令完全一致的使用体验" class="headerlink" title="4.2 内部调用 cargo 保证了 cross 与 cargo 命令完全一致的使用体验"></a>4.2 内部调用 <code>cargo</code> 保证了 cross 与 cargo 命令完全一致的使用体验</h3><p>cross 内部在起来对应target 的容器后，内部调用 cargo 以达到同 cargo 的一致体验。参考：<br><a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/rust-embedded/cross/blob/2b2a01220c73ae517129019d436d382412d1928b/src/main.rs#L389">调用代码</a></p>
-<h2 id="5-结语"><a href="#5-结语" class="headerlink" title="5. 结语"></a>5. 结语</h2><p><code>cross</code> 作为一款 <code>0</code> 配置的 Rust 跨平台编译利器，极大地便捷了日常开发和测试、流水线跨平台和发布等工作，<br>此外 cross 也支持 target 自定义镜像，方便用户将自定义的静态链接库等很方便地集成进去。 </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://hustclf.github.io/posts/3d1fe733/" data-id="cku9pg8tw000029ohbteyfzi4" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cross/" rel="tag">cross</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" rel="tag">跨平台编译</a></li></ul>
-
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-  
-    <a href="/posts/6d66e529/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">docker实战：原理篇</div>
-    </a>
-  
-</nav>
-
-  
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rust/">rust</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8D%9A%E5%AE%A2/">博客</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E7%A8%8B%E5%8C%96/">工程化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/">社区贡献</a></li></ul>
+    <div class="post-spread">
+      {% if theme.jiathis %}
+        {% include '_partials/share/jiathis.swig' %}
+      {% elseif theme.baidushare %}
+        {% include '_partials/share/baidushare.swig' %}
+      {% elseif theme.add_this_id %}
+        {% include '_partials/share/add-this.swig' %}
+      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
+        {% include '_partials/share/duoshuo_share.swig' %}
+      {% endif %}
     </div>
   </div>
 
+{% endblock %}
 
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/cross/" rel="tag">cross</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink-deployer/" rel="tag">flink-deployer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git-branch/" rel="tag">git branch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/helm/" rel="tag">helm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafka/" rel="tag">kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafkacat/" rel="tag">kafkacat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/logstash/" rel="tag">logstash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" rel="tag">mysql 事务命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/next/" rel="tag">next</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/operator/" rel="tag">operator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" rel="tag">redis 频率限制 高并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tcp-ip/" rel="tag">tcp/ip</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/that-is-me-on-github/" rel="tag">that_is_me_on_github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" rel="tag">评论系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" rel="tag">跨平台编译</a></li></ul>
-    </div>
-  </div>
+{% block sidebar %}
+  {{ sidebar_template.render(true) }}
+{% endblock %}
 
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/cross/" style="font-size: 10px;">cross</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/flink/" style="font-size: 10px;">flink</a> <a href="/tags/flink-deployer/" style="font-size: 10px;">flink-deployer</a> <a href="/tags/git-branch/" style="font-size: 10px;">git branch</a> <a href="/tags/helm/" style="font-size: 10px;">helm</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/kafka/" style="font-size: 10px;">kafka</a> <a href="/tags/kafkacat/" style="font-size: 10px;">kafkacat</a> <a href="/tags/kubernetes/" style="font-size: 10px;">kubernetes</a> <a href="/tags/logstash/" style="font-size: 10px;">logstash</a> <a href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" style="font-size: 10px;">mysql 事务命令</a> <a href="/tags/next/" style="font-size: 10px;">next</a> <a href="/tags/operator/" style="font-size: 10px;">operator</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" style="font-size: 10px;">redis 频率限制 高并发</a> <a href="/tags/rust/" style="font-size: 10px;">rust</a> <a href="/tags/spark/" style="font-size: 10px;">spark</a> <a href="/tags/tcp-ip/" style="font-size: 10px;">tcp/ip</a> <a href="/tags/that-is-me-on-github/" style="font-size: 10px;">that_is_me_on_github</a> <a href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" style="font-size: 10px;">评论系统</a> <a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" style="font-size: 10px;">跨平台编译</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">October 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/posts/3d1fe733/">cross: rust 的跨平台编译利器</a>
-          </li>
-        
-          <li>
-            <a href="/posts/6d66e529/">docker实战：原理篇</a>
-          </li>
-        
-          <li>
-            <a href="/posts/8499e970/">that_is_me_on_github: 一个统计github contribution的小工具</a>
-          </li>
-        
-          <li>
-            <a href="/posts/320cc8d6/">使用operator在kubernetes上部署spark</a>
-          </li>
-        
-          <li>
-            <a href="/posts/ebbd7fcc/">为flink-deployer添加cancel job feature</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2021 大飞哥<br>
-      Powered by <a href="http://hexo.io/" target="_blank" rel="external nofollow noopener noreferrer">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-
-
-  
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-
-  
-<script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-  </div>
-</body>
-</html>
+{% block script_extra %}
+  {% include '_scripts/pages/post-details.swig' %}
+{% endblock %}

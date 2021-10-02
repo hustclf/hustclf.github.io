@@ -1,283 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  
-  <title>docker实战：原理篇 | 大飞哥的博客</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="容器的本质：特殊的进程进程是程序和其运行所需要的计算机环境的总和，是计算机进行资源分配和调度的独立单位。 而容器则是一种特殊的进程，它被内核隔离在独立的命名空间下，享有独立的网络、磁盘、文件系统，并且被限制了执行所需要的资源（如cpu 内存等）。 容器同宿主机上其他进程一样， 同其他进程共享宿主机的内核，并接受内核的调度。 容器与虚拟机的区别，如下图所示：   图左画出了虚拟机的工作原理。Hype">
-<meta property="og:type" content="article">
-<meta property="og:title" content="docker实战：原理篇">
-<meta property="og:url" content="https://hustclf.github.io/posts/6d66e529/index.html">
-<meta property="og:site_name" content="大飞哥的博客">
-<meta property="og:description" content="容器的本质：特殊的进程进程是程序和其运行所需要的计算机环境的总和，是计算机进行资源分配和调度的独立单位。 而容器则是一种特殊的进程，它被内核隔离在独立的命名空间下，享有独立的网络、磁盘、文件系统，并且被限制了执行所需要的资源（如cpu 内存等）。 容器同宿主机上其他进程一样， 同其他进程共享宿主机的内核，并接受内核的调度。 容器与虚拟机的区别，如下图所示：   图左画出了虚拟机的工作原理。Hype">
-<meta property="og:locale">
-<meta property="og:image" content="https://hustclf.github.io/images/vm_and_container.png">
-<meta property="og:image" content="https://hustclf.github.io/images/vm_and_container_new.jpg">
-<meta property="article:published_time" content="2019-07-04T04:45:19.000Z">
-<meta property="article:modified_time" content="2021-06-14T01:12:32.909Z">
-<meta property="article:author" content="大飞哥">
-<meta property="article:tag" content="docker">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://hustclf.github.io/images/vm_and_container.png">
-  
-    <link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+{% extends '_layout.swig' %}
+{% import '_macro/post.swig' as post_template %}
+{% import '_macro/sidebar.swig' as sidebar_template %}
 
-  
 
-<meta name="generator" content="Hexo 5.4.0"></head>
+{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
 
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">大飞哥的博客</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hustclf.github.io"></form>
-      </div>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-docker实战：原理篇" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/posts/6d66e529/" class="article-date">
-  <time datetime="2019-07-04T04:45:19.000Z" itemprop="datePublished">2019-07-04</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a>
-  </div>
+{% block page_class %}page-post-detail{% endblock %}
 
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      docker实战：原理篇
-    </h1>
-  
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="容器的本质：特殊的进程"><a href="#容器的本质：特殊的进程" class="headerlink" title="容器的本质：特殊的进程"></a>容器的本质：特殊的进程</h2><p>进程是程序和其运行所需要的计算机环境的总和，是计算机进行资源分配和调度的独立单位。 而容器则是一种特殊的进程，它被内核隔离在独立的命名空间下，享有独立的网络、磁盘、文件系统，并且被限制了执行所需要的资源（如cpu 内存等）。</p>
-<p>容器同宿主机上其他进程一样， 同其他进程共享宿主机的内核，并接受内核的调度。</p>
-<p>容器与虚拟机的区别，如下图所示：</p>
-<img src="/images/vm_and_container.png">
+{% block content %}
 
-<p>图左画出了虚拟机的工作原理。Hypervisor通过硬件虚拟化功能，模拟出了运行一个操作系统需要的各种硬件，比如 CPU、内存、I/O 设备等等。然后，它在这些虚拟的硬件上安装了一个新的操作系统，即 Guest OS。</p>
-<p>图右中并不存在一个Hypervisor层模拟各个硬件，它仅仅只是对容器进程的运行环境进行了限制，但仍然使用了宿主机的内核。</p>
-<p>因此此图描述的不够严谨，系统中不存在真实运行的各个容器进程，这只不过是障眼法。</p>
-<p>更严谨的应该如下图：</p>
-<img src="/images/vm_and_container_new.jpg">
-此图中，容器进程直接运行在宿主机上，被宿主机内核管理，docker仅仅起到旁路辅助和管理工作。
+  <div id="posts" class="posts-expand">
+    {{ post_template.render(page) }}
 
-<a id="more"></a>
-
-<h2 id="隔离和限制：Namespace和Cgroup"><a href="#隔离和限制：Namespace和Cgroup" class="headerlink" title="隔离和限制：Namespace和Cgroup"></a>隔离和限制：Namespace和Cgroup</h2><h3 id="隔离"><a href="#隔离" class="headerlink" title="隔离"></a>隔离</h3><p>docker使用 Linux Namespace将容器进程进行隔离，容器享有独立的进程空间，因此在容器内部使用<code>ps</code>查看，会发现运行的进程id为1，而宿主机的其他资源不再可见。</p>
-<p>docker 使用linux内核提供的namespace进行隔离，相比虚拟机，拥有着<code>启动速度快</code>和<code>高性能</code>的优点。</p>
-<p>但也有其缺点，那就是隔离的不够彻底，有如下问题：</p>
-<ol>
-<li>由于共享内核，无法在window宿主机上运行linux容器、或者在低版本linux宿主机上运行高版本linux容器</li>
-<li>某些资源是全局资源，无法被namespace， 如时间。 若在一个容器内对时间进行修改， 则其他容器及宿主机其他进程也会生效。</li>
-</ol>
-<h3 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h3><p>docker使用Linux Cgroup对容器进程进行资源限制，限制的资源包括：cpu、内存、磁盘、网络带宽等。</p>
-<p>因为容器也是进程，只有对容器进行资源限制，才能避免容器占用过多宿主机资源，从而影响其他容器、宿主机其他进程的正常工作。</p>
-<h2 id="容器镜像原理：rootfs"><a href="#容器镜像原理：rootfs" class="headerlink" title="容器镜像原理：rootfs"></a>容器镜像原理：rootfs</h2><p>通过上面的描述，我们可以对容器有一个准确的定义：容器是一种使用namespace和cgroup进行隔离和限制的进程。</p>
-<p>那容器内访问的文件系统是如何工作的呢？</p>
-<p>答： 通过Mount Namespace将文件系统挂载为容器进程的根文件系统。</p>
-<p>docker 运行的核心原理如下：</p>
-<ol>
-<li>启用 Linux Namespace配置</li>
-<li>设置指定的Cgroup</li>
-<li>切换进程的根目录。</li>
-</ol>
-<p>需要注意的是ootfs 只是一个操作系统所包含的文件、配置和目录，并不包括操作系统内核。在 Linux 操作系统中，这两部分是分开存放的，操作系统只有在开机启动时才会加载指定版本的内核镜像。</p>
-<p>正是由于 rootfs 的存在，容器才有了一个杀手锏： 一致性。</p>
-<p>容器本质是进程，进程的本质是程序及其运行环境的组合，这里的运行环境不单单只java版本、类库版本等，还包括操作系统版本等。</p>
-<p>而rootfs将除linux内核外所有依赖环境进行打包，从而保证了软件开发、测试、部署、交付全流程的一致性。也因此docker改变了软件开发和交付的流程。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://hustclf.github.io/posts/6d66e529/" data-id="cku9noiv8000aosoh3nsvbqb8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li></ul>
-
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/posts/3d1fe733/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          cross: rust 的跨平台编译利器
-        
-      </div>
-    </a>
-  
-  
-    <a href="/posts/8499e970/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">that_is_me_on_github: 一个统计github contribution的小工具</div>
-    </a>
-  
-</nav>
-
-  
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rust/">rust</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8D%9A%E5%AE%A2/">博客</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E7%A8%8B%E5%8C%96/">工程化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/">社区贡献</a></li></ul>
+    <div class="post-spread">
+      {% if theme.jiathis %}
+        {% include '_partials/share/jiathis.swig' %}
+      {% elseif theme.baidushare %}
+        {% include '_partials/share/baidushare.swig' %}
+      {% elseif theme.add_this_id %}
+        {% include '_partials/share/add-this.swig' %}
+      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
+        {% include '_partials/share/duoshuo_share.swig' %}
+      {% endif %}
     </div>
   </div>
 
+{% endblock %}
 
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/cross/" rel="tag">cross</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink-deployer/" rel="tag">flink-deployer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git-branch/" rel="tag">git branch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/helm/" rel="tag">helm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafka/" rel="tag">kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafkacat/" rel="tag">kafkacat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/logstash/" rel="tag">logstash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" rel="tag">mysql 事务命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/next/" rel="tag">next</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/operator/" rel="tag">operator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" rel="tag">redis 频率限制 高并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tcp-ip/" rel="tag">tcp/ip</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/that-is-me-on-github/" rel="tag">that_is_me_on_github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" rel="tag">评论系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" rel="tag">跨平台编译</a></li></ul>
-    </div>
-  </div>
+{% block sidebar %}
+  {{ sidebar_template.render(true) }}
+{% endblock %}
 
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/cross/" style="font-size: 10px;">cross</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/flink/" style="font-size: 10px;">flink</a> <a href="/tags/flink-deployer/" style="font-size: 10px;">flink-deployer</a> <a href="/tags/git-branch/" style="font-size: 10px;">git branch</a> <a href="/tags/helm/" style="font-size: 10px;">helm</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/kafka/" style="font-size: 10px;">kafka</a> <a href="/tags/kafkacat/" style="font-size: 10px;">kafkacat</a> <a href="/tags/kubernetes/" style="font-size: 10px;">kubernetes</a> <a href="/tags/logstash/" style="font-size: 10px;">logstash</a> <a href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" style="font-size: 10px;">mysql 事务命令</a> <a href="/tags/next/" style="font-size: 10px;">next</a> <a href="/tags/operator/" style="font-size: 10px;">operator</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" style="font-size: 10px;">redis 频率限制 高并发</a> <a href="/tags/rust/" style="font-size: 10px;">rust</a> <a href="/tags/spark/" style="font-size: 10px;">spark</a> <a href="/tags/tcp-ip/" style="font-size: 10px;">tcp/ip</a> <a href="/tags/that-is-me-on-github/" style="font-size: 10px;">that_is_me_on_github</a> <a href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" style="font-size: 10px;">评论系统</a> <a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" style="font-size: 10px;">跨平台编译</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">October 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/posts/3d1fe733/">cross: rust 的跨平台编译利器</a>
-          </li>
-        
-          <li>
-            <a href="/posts/6d66e529/">docker实战：原理篇</a>
-          </li>
-        
-          <li>
-            <a href="/posts/8499e970/">that_is_me_on_github: 一个统计github contribution的小工具</a>
-          </li>
-        
-          <li>
-            <a href="/posts/320cc8d6/">使用operator在kubernetes上部署spark</a>
-          </li>
-        
-          <li>
-            <a href="/posts/ebbd7fcc/">为flink-deployer添加cancel job feature</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2021 大飞哥<br>
-      Powered by <a href="http://hexo.io/" target="_blank" rel="external nofollow noopener noreferrer">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-
-
-  
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-
-  
-<script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-  </div>
-</body>
-</html>
+{% block script_extra %}
+  {% include '_scripts/pages/post-details.swig' %}
+{% endblock %}

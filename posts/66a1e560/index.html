@@ -1,254 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  
-  <title>修复kafkacat json format的bug | 大飞哥的博客</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="修复kafkacat json format的bugkafkacat是一款c语言实现的kafka client cli, 不同于kafka官方包里的cli，使用比较繁琐，并且依赖jvm才能运行， kafkacat是一个小巧的cmd， 依赖一个基础c library: librdkafka,能够很方便地对kafka进行一些基本操作，如list、producer、consumer等。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="修复kafkacat json format的bug">
-<meta property="og:url" content="https://hustclf.github.io/posts/66a1e560/index.html">
-<meta property="og:site_name" content="大飞哥的博客">
-<meta property="og:description" content="修复kafkacat json format的bugkafkacat是一款c语言实现的kafka client cli, 不同于kafka官方包里的cli，使用比较繁琐，并且依赖jvm才能运行， kafkacat是一个小巧的cmd， 依赖一个基础c library: librdkafka,能够很方便地对kafka进行一些基本操作，如list、producer、consumer等。">
-<meta property="og:locale">
-<meta property="article:published_time" content="2019-01-19T03:16:29.000Z">
-<meta property="article:modified_time" content="2021-06-14T01:12:32.911Z">
-<meta property="article:author" content="大飞哥">
-<meta property="article:tag" content="kafkacat">
-<meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+{% extends '_layout.swig' %}
+{% import '_macro/post.swig' as post_template %}
+{% import '_macro/sidebar.swig' as sidebar_template %}
 
-  
 
-<meta name="generator" content="Hexo 5.4.0"></head>
+{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
 
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">大飞哥的博客</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hustclf.github.io"></form>
-      </div>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-修复kafkacat-json-format的bug" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/posts/66a1e560/" class="article-date">
-  <time datetime="2019-01-19T03:16:29.000Z" itemprop="datePublished">2019-01-19</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/">社区贡献</a>
-  </div>
+{% block page_class %}page-post-detail{% endblock %}
 
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      修复kafkacat json format的bug
-    </h1>
-  
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="修复kafkacat-json-format的bug"><a href="#修复kafkacat-json-format的bug" class="headerlink" title="修复kafkacat json format的bug"></a>修复kafkacat json format的bug</h1><p>kafkacat是一款c语言实现的kafka client cli, 不同于kafka官方包里的cli，使用比较繁琐，并且依赖jvm才能运行， kafkacat是一个小巧的cmd， 依赖一个基础c library: <a href="https://github.com/edenhill/librdkafka" target="_blank" rel="external nofollow noopener noreferrer">librdkafka</a>,能够很方便地对kafka进行一些基本操作，如list、producer、consumer等。</p>
-<a id="more"></a>
+{% block content %}
 
-<p>kafkacat的作者是<a href="https://github.com/edenhill" target="_blank" rel="external nofollow noopener noreferrer">edenhill</a>， 同时也是librdkafka的作者，现在应该是kafka的母公司，confluent的一名工程师</p>
-<h2 id="如何发现该bug？"><a href="#如何发现该bug？" class="headerlink" title="如何发现该bug？"></a>如何发现该bug？</h2><p>kafka在v0.10之后的版本，每条数据除了key 和message之外，还会携带一条timestamp， 代表该条日志的时间.( <a href="https://stackoverflow.com/questions/39514167/retrieve-timestamp-based-data-from-kafka" target="_blank" rel="external nofollow noopener noreferrer">参考</a> )</p>
-<p>我在使用kafka streams开发应用时，发现我的输出的topic总是会被kafka清理掉， 我产生的日志使用event timestamp作为执行的timestamp，数据是1月以前的，因此我怀疑输出的topic的日志，timestamp使用的是event timestamp，因此被kafka认为是过期日志，清理掉了。</p>
-<p>kafkacat是支持消费时指定固定的格式的，通过指定 <code>-J</code> 参数，可以打印json格式的message,其中会携带该message的所有源数据，包括： partition, key, value, timestamp等。</p>
-<p>因此我使用kafkacat进行消费时，发现了该bug， 按照json格式消费时，展示timestamp字段不正确，因此我提了相关issue， 并通过阅读源码，修改了该bug。</p>
-<h2 id="issue地址"><a href="#issue地址" class="headerlink" title="issue地址"></a>issue地址</h2><p><a href="https://github.com/edenhill/kafkacat/issues/167" target="_blank" rel="external nofollow noopener noreferrer">issue</a></p>
-<h2 id="pr地址"><a href="#pr地址" class="headerlink" title="pr地址"></a>pr地址</h2><p><a href="https://github.com/edenhill/kafkacat/pull/166" target="_blank" rel="external nofollow noopener noreferrer">pr</a></p>
+  <div id="posts" class="posts-expand">
+    {{ post_template.render(page) }}
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://hustclf.github.io/posts/66a1e560/" data-id="cku9noivd000kosoh4tjhblqv" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafkacat/" rel="tag">kafkacat</a></li></ul>
-
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/posts/aaa3e6e1/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          使用logstash将kafka数据写入elasticsearch
-        
-      </div>
-    </a>
-  
-  
-    <a href="/posts/c1cadd8e/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">git branch模型最佳实践[译]</div>
-    </a>
-  
-</nav>
-
-  
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rust/">rust</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8D%9A%E5%AE%A2/">博客</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E7%A8%8B%E5%8C%96/">工程化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/">社区贡献</a></li></ul>
+    <div class="post-spread">
+      {% if theme.jiathis %}
+        {% include '_partials/share/jiathis.swig' %}
+      {% elseif theme.baidushare %}
+        {% include '_partials/share/baidushare.swig' %}
+      {% elseif theme.add_this_id %}
+        {% include '_partials/share/add-this.swig' %}
+      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
+        {% include '_partials/share/duoshuo_share.swig' %}
+      {% endif %}
     </div>
   </div>
 
+{% endblock %}
 
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/cross/" rel="tag">cross</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink-deployer/" rel="tag">flink-deployer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git-branch/" rel="tag">git branch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/helm/" rel="tag">helm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafka/" rel="tag">kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafkacat/" rel="tag">kafkacat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/logstash/" rel="tag">logstash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" rel="tag">mysql 事务命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/next/" rel="tag">next</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/operator/" rel="tag">operator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" rel="tag">redis 频率限制 高并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tcp-ip/" rel="tag">tcp/ip</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/that-is-me-on-github/" rel="tag">that_is_me_on_github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" rel="tag">评论系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" rel="tag">跨平台编译</a></li></ul>
-    </div>
-  </div>
+{% block sidebar %}
+  {{ sidebar_template.render(true) }}
+{% endblock %}
 
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/cross/" style="font-size: 10px;">cross</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/flink/" style="font-size: 10px;">flink</a> <a href="/tags/flink-deployer/" style="font-size: 10px;">flink-deployer</a> <a href="/tags/git-branch/" style="font-size: 10px;">git branch</a> <a href="/tags/helm/" style="font-size: 10px;">helm</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/kafka/" style="font-size: 10px;">kafka</a> <a href="/tags/kafkacat/" style="font-size: 10px;">kafkacat</a> <a href="/tags/kubernetes/" style="font-size: 10px;">kubernetes</a> <a href="/tags/logstash/" style="font-size: 10px;">logstash</a> <a href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" style="font-size: 10px;">mysql 事务命令</a> <a href="/tags/next/" style="font-size: 10px;">next</a> <a href="/tags/operator/" style="font-size: 10px;">operator</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" style="font-size: 10px;">redis 频率限制 高并发</a> <a href="/tags/rust/" style="font-size: 10px;">rust</a> <a href="/tags/spark/" style="font-size: 10px;">spark</a> <a href="/tags/tcp-ip/" style="font-size: 10px;">tcp/ip</a> <a href="/tags/that-is-me-on-github/" style="font-size: 10px;">that_is_me_on_github</a> <a href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" style="font-size: 10px;">评论系统</a> <a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" style="font-size: 10px;">跨平台编译</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">October 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/posts/3d1fe733/">cross: rust 的跨平台编译利器</a>
-          </li>
-        
-          <li>
-            <a href="/posts/6d66e529/">docker实战：原理篇</a>
-          </li>
-        
-          <li>
-            <a href="/posts/8499e970/">that_is_me_on_github: 一个统计github contribution的小工具</a>
-          </li>
-        
-          <li>
-            <a href="/posts/320cc8d6/">使用operator在kubernetes上部署spark</a>
-          </li>
-        
-          <li>
-            <a href="/posts/ebbd7fcc/">为flink-deployer添加cancel job feature</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2021 大飞哥<br>
-      Powered by <a href="http://hexo.io/" target="_blank" rel="external nofollow noopener noreferrer">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-
-
-  
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-
-  
-<script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-  </div>
-</body>
-</html>
+{% block script_extra %}
+  {% include '_scripts/pages/post-details.swig' %}
+{% endblock %}

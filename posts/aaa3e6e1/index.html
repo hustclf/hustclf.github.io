@@ -1,300 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  
-  <title>使用logstash将kafka数据写入elasticsearch | 大飞哥的博客</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="目标将kafka中的日志写入elasticsearch，并要求支持以下功能：  根据日志时间建立index，便于后续对index的管理 使用log_id作为document_id，保持写入es的幂等性 对建立的多个index, 设置相同的alias （业务方使用alias进行query，对具体index不感知） 由于日志时间为epoch_seconds，无法被es自动引用为时间，需要进行字段ma">
-<meta property="og:type" content="article">
-<meta property="og:title" content="使用logstash将kafka数据写入elasticsearch">
-<meta property="og:url" content="https://hustclf.github.io/posts/aaa3e6e1/index.html">
-<meta property="og:site_name" content="大飞哥的博客">
-<meta property="og:description" content="目标将kafka中的日志写入elasticsearch，并要求支持以下功能：  根据日志时间建立index，便于后续对index的管理 使用log_id作为document_id，保持写入es的幂等性 对建立的多个index, 设置相同的alias （业务方使用alias进行query，对具体index不感知） 由于日志时间为epoch_seconds，无法被es自动引用为时间，需要进行字段ma">
-<meta property="og:locale">
-<meta property="article:published_time" content="2019-02-14T17:39:01.000Z">
-<meta property="article:modified_time" content="2021-06-14T01:12:32.911Z">
-<meta property="article:author" content="大飞哥">
-<meta property="article:tag" content="logstash">
-<meta property="article:tag" content="kafka">
-<meta property="article:tag" content="elasticsearch">
-<meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+{% extends '_layout.swig' %}
+{% import '_macro/post.swig' as post_template %}
+{% import '_macro/sidebar.swig' as sidebar_template %}
 
-  
 
-<meta name="generator" content="Hexo 5.4.0"></head>
+{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
 
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">大飞哥的博客</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hustclf.github.io"></form>
-      </div>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-使用logstash将kafka数据写入es" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/posts/aaa3e6e1/" class="article-date">
-  <time datetime="2019-02-14T17:39:01.000Z" itemprop="datePublished">2019-02-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
-  </div>
+{% block page_class %}page-post-detail{% endblock %}
 
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      使用logstash将kafka数据写入elasticsearch
-    </h1>
-  
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <hr>
-<h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>将kafka中的日志写入elasticsearch，并要求支持以下功能：</p>
-<ol>
-<li>根据日志时间建立index，便于后续对index的管理</li>
-<li>使用log_id作为document_id，保持写入es的幂等性</li>
-<li>对建立的多个index, 设置相同的alias （业务方使用alias进行query，对具体index不感知）</li>
-<li>由于日志时间为epoch_seconds，无法被es自动引用为时间，需要进行字段mapping</li>
-</ol>
-<h2 id="软件版本及日志格式"><a href="#软件版本及日志格式" class="headerlink" title="软件版本及日志格式"></a>软件版本及日志格式</h2><h4 id="软件版本"><a href="#软件版本" class="headerlink" title="软件版本"></a>软件版本</h4><p>kafka: 2.1.0</p>
-<p>elasticsearch: 6.6.0</p>
-<p>kakfa-connect-elasticsearch: v5.1.1</p>
-<p>logstash: 6.6.0</p>
-<a id="more"></a>
+{% block content %}
 
-<h4 id="日志格式"><a href="#日志格式" class="headerlink" title="日志格式"></a>日志格式</h4><p>日志是以json格式存储在topic中，topic_name为logs</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;log_id&quot;: &#39;log_xxxxxxx&#39;,</span><br><span class="line">	&quot;timestamp&quot;: 1550167937,</span><br><span class="line">	&quot;user_id&quot;: &quot;xxxx&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  <div id="posts" class="posts-expand">
+    {{ post_template.render(page) }}
 
-<h2 id="计算方案选型"><a href="#计算方案选型" class="headerlink" title="计算方案选型"></a>计算方案选型</h2><h3 id="kafka-connect-elasticsearch"><a href="#kafka-connect-elasticsearch" class="headerlink" title="kafka-connect-elasticsearch"></a>kafka-connect-elasticsearch</h3><p>kafka-connect-elasticseach是confluent（kafka团队的母公司）提供的kafka connect的一个plugin， 用于将kakfa的数据导入es</p>
-<p>相关地址及参考链接如下：</p>
-<p><a href="https://github.com/confluentinc/kafka-connect-elasticsearch" target="_blank" rel="external nofollow noopener noreferrer">github repo</a></p>
-<p><a href="https://docs.confluent.io/current/connect/kafka-connect-elasticsearch/index.html" target="_blank" rel="external nofollow noopener noreferrer">document</a></p>
-<h3 id="logstash"><a href="#logstash" class="headerlink" title="logstash"></a>logstash</h3><p>logstash 提供kafka input plugin 和 elasticsearch output plugin, 也支持将kafka数据导入es</p>
-<p><a href="https://www.elastic.co/guide/en/logstash/current/index.html" target="_blank" rel="external nofollow noopener noreferrer">document</a></p>
-<h3 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h3><p>kafka-connect-elasticsearch是基于kafka connect api实现的plugin，功能强在kafka端，目前该插件对elasticsearch的支持有限，而且迭代也较慢，而且目前部署对devops也不友好，不满足我们需要的功能</p>
-<p>logstash是elasticsearch较早推出的收集及分发数据的组件，功能强在elasticsearch端，功能强大且较成熟，并且支持所需的所有功能。</p>
-<p>因此，决定使用logstash来满足我们的需求</p>
-<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="任务分拆"><a href="#任务分拆" class="headerlink" title="任务分拆"></a>任务分拆</h3><ol>
-<li>支持按照日志创建index名称： 在output中指定index的命名方式</li>
-<li>支持使用log_id作为es的document_id</li>
-<li>支持设置别名</li>
-<li>支持将日志时间戳mapping 为document的时间戳</li>
-</ol>
-<p>要实现上述目标，只需要提供两个配置文件：</p>
-<p>1 pipeline.yaml: 用于定义input fliter output等信息</p>
-<p>2 index-template.json: 用于定义index模板，将index名与alias动态关联，并且创建mapping</p>
-<h3 id="pipeline-yaml"><a href="#pipeline-yaml" class="headerlink" title="pipeline.yaml"></a>pipeline.yaml</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"># configuration for transformming events from kafka to elasicsearch</span><br><span class="line"># Kafka -&gt; Logstash -&gt; Elasticsearch pipeline.</span><br><span class="line">input &#123;</span><br><span class="line">  kafka &#123;</span><br><span class="line">    bootstrap_servers &#x3D;&gt; “localhost:9092&quot;</span><br><span class="line">    topics &#x3D;&gt; [&quot;logs&quot;]</span><br><span class="line">    group_id &#x3D;&gt; &quot;logstash-logs&quot;</span><br><span class="line">    auto_offset_reset &#x3D;&gt; &quot;earliest&quot;</span><br><span class="line">    codec &#x3D;&gt; json</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">  date &#123;</span><br><span class="line">    match &#x3D;&gt; [&quot;timestamp&quot;, &quot;UNIX&quot;]</span><br><span class="line">    target &#x3D;&gt; &quot;@timestamp&quot;</span><br><span class="line">    timezone &#x3D;&gt; &quot;Asia&#x2F;Shanghai&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">  elasticsearch &#123;</span><br><span class="line">    hosts &#x3D;&gt; [&quot;localhost:9200&quot;]</span><br><span class="line">    index &#x3D;&gt; &quot;logs-%&#123;+YYYY.MM&#125;&quot;</span><br><span class="line">    document_type &#x3D;&gt; &quot;log&quot;</span><br><span class="line">    document_id &#x3D;&gt; &quot;%&#123;log_id&#125;&quot;</span><br><span class="line">    template &#x3D;&gt; &quot;conf&#x2F;index-template.json&quot;</span><br><span class="line">    template_name &#x3D;&gt; &quot;logs&quot;</span><br><span class="line">    template_overwrite &#x3D;&gt; true</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>解释：</p>
-<ul>
-<li>input: 配置了kafka相关的信息</li>
-<li>fliter: 由于index命名时所用的时间为logstash的元数据 <code>@timestamp</code>, 因此需要在<code>fliter</code>中使用<code>date</code> 插件，用日志时间覆写原始的<code>@timestamp</code> （原始的<code>@timestamp</code>是日志摄入时间，而非日志时间）</li>
-<li>output: 配置了elasticsearch的信息，以及使用log_id作为document_id， index的命名、及index使用的模板路径<code>config/index-template.json</code></li>
-</ul>
-<h3 id="index-template-json"><a href="#index-template-json" class="headerlink" title="index-template.json"></a>index-template.json</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;index_patterns&quot; : [&quot;logs-*&quot;],</span><br><span class="line">    &quot;settings&quot;: &#123;</span><br><span class="line">         &quot;number_of_shards&quot;: 1,</span><br><span class="line">     &#125;,</span><br><span class="line">     &quot;mappings&quot;: &#123;</span><br><span class="line">         &quot;log&quot;: &#123;</span><br><span class="line">             &quot;properties&quot;: &#123;</span><br><span class="line">                 &quot;timestamp&quot;: &#123;</span><br><span class="line">                     &quot;type&quot;: &quot;date&quot;,</span><br><span class="line">                     &quot;format&quot;: &quot;epoch_second&quot;</span><br><span class="line">                 &#125;,</span><br><span class="line">             &#125;,</span><br><span class="line">             &quot;dynamic_date_formats&quot;: [</span><br><span class="line">                 &quot;date_time&quot;,</span><br><span class="line">                 &quot;date_time_no_millis&quot;</span><br><span class="line">             ]</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;,</span><br><span class="line">    &quot;aliases&quot; : &#123;</span><br><span class="line">        &quot;logs&quot; : &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>解释：</p>
-<ul>
-<li>index_patterns: 确定了该index模板作用的index范围</li>
-<li>mappings: 配置使用日志的<code>timestamp</code>字段，作为es中document的日期字段</li>
-<li>alias: 为新增的index，创建统一的别名</li>
-</ul>
-<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><p>下载logstash（current version = 6.6.0）, 并将上述两个文件置于<code>path/config</code>目录下, 然后运行如下命令:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin&#x2F;logstash -f config&#x2F;pipeline.yaml</span><br></pre></td></tr></table></figure>
-
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>logstash已经提供了官方镜像， 因此可以使用docker-compose或者kubernetes来部署logstash，此处不再赘述</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://hustclf.github.io/posts/aaa3e6e1/" data-id="cku9noivc000iosohf0ghhfg2" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/" rel="tag">kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/logstash/" rel="tag">logstash</a></li></ul>
-
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/posts/8838407/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          hexo NexT主题集成disqus评论系统
-        
-      </div>
-    </a>
-  
-  
-    <a href="/posts/66a1e560/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">修复kafkacat json format的bug</div>
-    </a>
-  
-</nav>
-
-  
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rust/">rust</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8D%9A%E5%AE%A2/">博客</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E7%A8%8B%E5%8C%96/">工程化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/">社区贡献</a></li></ul>
+    <div class="post-spread">
+      {% if theme.jiathis %}
+        {% include '_partials/share/jiathis.swig' %}
+      {% elseif theme.baidushare %}
+        {% include '_partials/share/baidushare.swig' %}
+      {% elseif theme.add_this_id %}
+        {% include '_partials/share/add-this.swig' %}
+      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
+        {% include '_partials/share/duoshuo_share.swig' %}
+      {% endif %}
     </div>
   </div>
 
+{% endblock %}
 
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/cross/" rel="tag">cross</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink-deployer/" rel="tag">flink-deployer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git-branch/" rel="tag">git branch</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/helm/" rel="tag">helm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafka/" rel="tag">kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafkacat/" rel="tag">kafkacat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/logstash/" rel="tag">logstash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" rel="tag">mysql 事务命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/next/" rel="tag">next</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/operator/" rel="tag">operator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" rel="tag">redis 频率限制 高并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/" rel="tag">rust</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/" rel="tag">spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tcp-ip/" rel="tag">tcp/ip</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/that-is-me-on-github/" rel="tag">that_is_me_on_github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" rel="tag">评论系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" rel="tag">跨平台编译</a></li></ul>
-    </div>
-  </div>
+{% block sidebar %}
+  {{ sidebar_template.render(true) }}
+{% endblock %}
 
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/cross/" style="font-size: 10px;">cross</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/flink/" style="font-size: 10px;">flink</a> <a href="/tags/flink-deployer/" style="font-size: 10px;">flink-deployer</a> <a href="/tags/git-branch/" style="font-size: 10px;">git branch</a> <a href="/tags/helm/" style="font-size: 10px;">helm</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/kafka/" style="font-size: 10px;">kafka</a> <a href="/tags/kafkacat/" style="font-size: 10px;">kafkacat</a> <a href="/tags/kubernetes/" style="font-size: 10px;">kubernetes</a> <a href="/tags/logstash/" style="font-size: 10px;">logstash</a> <a href="/tags/mysql-%E4%BA%8B%E5%8A%A1%E5%91%BD%E4%BB%A4/" style="font-size: 10px;">mysql 事务命令</a> <a href="/tags/next/" style="font-size: 10px;">next</a> <a href="/tags/operator/" style="font-size: 10px;">operator</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/redis-%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6-%E9%AB%98%E5%B9%B6%E5%8F%91/" style="font-size: 10px;">redis 频率限制 高并发</a> <a href="/tags/rust/" style="font-size: 10px;">rust</a> <a href="/tags/spark/" style="font-size: 10px;">spark</a> <a href="/tags/tcp-ip/" style="font-size: 10px;">tcp/ip</a> <a href="/tags/that-is-me-on-github/" style="font-size: 10px;">that_is_me_on_github</a> <a href="/tags/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" style="font-size: 10px;">评论系统</a> <a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" style="font-size: 10px;">跨平台编译</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">October 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/posts/3d1fe733/">cross: rust 的跨平台编译利器</a>
-          </li>
-        
-          <li>
-            <a href="/posts/6d66e529/">docker实战：原理篇</a>
-          </li>
-        
-          <li>
-            <a href="/posts/8499e970/">that_is_me_on_github: 一个统计github contribution的小工具</a>
-          </li>
-        
-          <li>
-            <a href="/posts/320cc8d6/">使用operator在kubernetes上部署spark</a>
-          </li>
-        
-          <li>
-            <a href="/posts/ebbd7fcc/">为flink-deployer添加cancel job feature</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2021 大飞哥<br>
-      Powered by <a href="http://hexo.io/" target="_blank" rel="external nofollow noopener noreferrer">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-
-
-  
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-
-  
-<script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-  </div>
-</body>
-</html>
+{% block script_extra %}
+  {% include '_scripts/pages/post-details.swig' %}
+{% endblock %}
