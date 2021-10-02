@@ -195,104 +195,6 @@
   
   
   <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="https://chenlifei.tech/posts/3d1fe733/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="大飞哥">
-      <meta itemprop="description" content="大数据、云原生、微服务等">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="大飞哥的博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/3d1fe733/" class="post-title-link" itemprop="url">cross: rust 的跨平台编译利器</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-              
-
-              <time title="Created: 2021-10-02 18:27:56 / Modified: 18:51:27" itemprop="dateCreated datePublished" datetime="2021-10-02T18:27:56+08:00">2021-10-02</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/rust/" itemprop="url" rel="index"><span itemprop="name">rust</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus: </span>
-    
-    <a title="disqus" href="/posts/3d1fe733/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/3d1fe733/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="1-cross-介绍"><a href="#1-cross-介绍" class="headerlink" title="1. cross 介绍"></a>1. cross 介绍</h2><p>cross 是 <code>0</code> 配置的 Rust 跨平台编译工具，它有着使用简单、功能强大的特点，极大地方便了 rust 跨平台项目的构建、测试和发布。</p>
-<h2 id="2-cargo-跨平台编译及问题"><a href="#2-cargo-跨平台编译及问题" class="headerlink" title="2. cargo 跨平台编译及问题"></a>2. cargo 跨平台编译及问题</h2><h3 id="2-1-cargo-跨平台编译"><a href="#2-1-cargo-跨平台编译" class="headerlink" title="2.1 cargo 跨平台编译"></a>2.1 cargo 跨平台编译</h3><p>cargo 本身支持跨平台编译，一般使用有如下命令：</p>
-<ul>
-<li><p>查看 target 列表<br><code>rustup target list</code></p>
-</li>
-<li><p>安装新的 target，以 <code>i686-unknown-linux-gnu</code> 为例<br><code>rustup target add i686-unknown-linux-gnu</code></p>
-</li>
-<li><p>编译 linux 32 gpu 的产物<br><code>cargo build --release --target i686-unknown-linux-gnu</code></p>
-</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/3d1fe733/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
     <link itemprop="mainEntityOfPage" href="https://chenlifei.tech/posts/6d66e529/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1175,6 +1077,94 @@
   
   
 
+      
+  
+  
+  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://chenlifei.tech/posts/43eca55f/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="大飞哥">
+      <meta itemprop="description" content="大数据、云原生、微服务等">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大飞哥的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/43eca55f/" class="post-title-link" itemprop="url">mysql事务隔离级设置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-08-24 11:34:09" itemprop="dateCreated datePublished" datetime="2017-08-24T11:34:09+08:00">2017-08-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-06-14 09:12:32" itemprop="dateModified" datetime="2021-06-14T09:12:32+08:00">2021-06-14</time>
+              </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/posts/43eca55f/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/43eca55f/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="mysql-事务隔离级设置"><a href="#mysql-事务隔离级设置" class="headerlink" title="mysql 事务隔离级设置"></a>mysql 事务隔离级设置</h2><h3 id="如何查看当前SESSION的事务隔离级"><a href="#如何查看当前SESSION的事务隔离级" class="headerlink" title="如何查看当前SESSION的事务隔离级"></a>如何查看当前SESSION的事务隔离级</h3><p>mysql 默认的事务隔离级是 REPEATABLE-READ</p>
+<p>可以通过以下命令查看当前session的事务隔离级（5.7.20之前）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [(none)]&gt; select @@session.tx_isolation;</span><br><span class="line">+------------------------+</span><br><span class="line">| @@session.tx_isolation |</span><br><span class="line">+------------------------+</span><br><span class="line">| REPEATABLE-READ        |</span><br><span class="line">+------------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/43eca55f/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1243,18 +1233,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
