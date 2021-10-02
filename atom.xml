@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://chenlifei.tech/"/>
-  <updated>2021-06-14T01:12:32.909Z</updated>
+  <updated>2021-10-02T11:21:27.001Z</updated>
   <id>https://chenlifei.tech/</id>
   
   <author>
@@ -15,6 +15,42 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>cross: rust 的跨平台编译利器</title>
+    <link href="https://chenlifei.tech/posts/3d1fe733/"/>
+    <id>https://chenlifei.tech/posts/3d1fe733/</id>
+    <published>2021-10-02T10:27:56.000Z</published>
+    <updated>2021-10-02T11:21:27.001Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="1-cross-介绍"><a href="#1-cross-介绍" class="headerlink" title="1. cross 介绍"></a>1. cross 介绍</h2><p>cross 是 <code>0</code> 配置的 Rust 跨平台编译工具，它有着使用简单、功能强大的特点，极大地方便了 rust 跨平台项目的构建、测试和发布。</p><h2 id="2-cargo-跨平台编译及问题"><a href="#2-cargo-跨平台编译及问题" class="headerlink" title="2. cargo 跨平台编译及问题"></a>2. cargo 跨平台编译及问题</h2><h3 id="2-1-cargo-跨平台编译"><a href="#2-1-cargo-跨平台编译" class="headerlink" title="2.1 cargo 跨平台编译"></a>2.1 cargo 跨平台编译</h3><p>cargo 本身支持跨平台编译，一般使用有如下命令：</p><ul><li><p>查看 target 列表<br><code>rustup target list</code></p></li><li><p>安装新的 target，以 <code>i686-unknown-linux-gnu</code> 为例<br><code>rustup target add i686-unknown-linux-gnu</code></p></li><li><p>编译 linux 32 gpu 的产物<br><code>cargo build --release --target i686-unknown-linux-gnu</code></p></li></ul><span id="more"></span><h3 id="2-2-问题"><a href="#2-2-问题" class="headerlink" title="2.2 问题"></a>2.2 问题</h3><p>以上编译产物是非静态的二进制，运行时会对动态环境有依赖，如依赖 libc.so、依赖 libssl.so 等，以下是对某个 rust 编写的 agent 使用 <code>x86_64-unknown-linux-gnu</code> 编译产物的依赖：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># ldd agent</span><br><span class="line">        linux-vdso.so.1 =&gt;  (0x00007fffa0b6f000)</span><br><span class="line">        /$LIB/libonion.so =&gt; /lib64/libonion.so (0x00007f6ce530f000)</span><br><span class="line">        libgcc_s.so.1 =&gt; /lib64/libgcc_s.so.1 (0x00007f6ce3819000)</span><br><span class="line">        librt.so.1 =&gt; /lib64/librt.so.1 (0x00007f6ce3611000)</span><br><span class="line">        libpthread.so.0 =&gt; /lib64/libpthread.so.0 (0x00007f6ce33f5000)</span><br><span class="line">        libm.so.6 =&gt; /lib64/libm.so.6 (0x00007f6ce30f3000)</span><br><span class="line">        libdl.so.2 =&gt; /lib64/libdl.so.2 (0x00007f6ce2eef000)</span><br><span class="line">        libc.so.6 =&gt; /lib64/libc.so.6 (0x00007f6ce2b21000)</span><br><span class="line">        /lib64/ld-linux-x86-64.so.2 (0x00007f6ce51f6000)</span><br></pre></td></tr></table></figure><p>而对于在运行客户环境的 agent，要尽量减少外部的依赖，因此 agent 需要编译为纯静态的二进制， 即编译target 为 <code>x86_64-unknown-linux-musl</code>, 此时使用 cargo 进行编译就不方便了。</p><p>如果使用 musl 的方式编译，需要依赖 musl libc 和 musl-gcc。<br>参考： <a href="https://rustwiki.org/zh-CN/edition-guide/rust-2018/platform-and-target-support/musl-support-for-fully-static-binaries.html#musl-%E6%94%AF%E6%8C%81%E5%AE%8C%E5%85%A8%E9%9D%99%E6%80%81%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6">https://rustwiki.org/zh-CN/edition-guide/rust-2018/platform-and-target-support/musl-support-for-fully-static-binaries.html#musl-%E6%94%AF%E6%8C%81%E5%AE%8C%E5%85%A8%E9%9D%99%E6%80%81%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6</a></p><p>如果要支持多平台的产物编译，除了要安装对应的musl target，还需要各个平台的 musl libc 和 musl-gcc 版本，搭建跨平台编译环境就很不方便了。</p><h2 id="3-cross-进行跨平台编译"><a href="#3-cross-进行跨平台编译" class="headerlink" title="3. cross 进行跨平台编译"></a>3. cross 进行跨平台编译</h2><p>于是 <code>cross</code> 就应运而生了，它通过容器技术屏蔽了各个环境编译依赖的细节，实现了 <code>0</code> 配置的跨平台编译体验，而且保持了同 cargo 一致的体验。</p><p>演示如下：</p><h3 id="3-1-安装-cross"><a href="#3-1-安装-cross" class="headerlink" title="3.1 安装 cross"></a>3.1 安装 cross</h3><p><code>crago install cross</code><br>之后就可以使用 <code>cross</code> 替换到 <code>cargo</code> 命令了。</p><h3 id="3-2-编译-x86-64-unknown-linux-musl"><a href="#3-2-编译-x86-64-unknown-linux-musl" class="headerlink" title="3.2 编译 x86_64-unknown-linux-musl"></a>3.2 编译 <code>x86_64-unknown-linux-musl</code></h3><p><code>cross build --release --target x86_64-unknown-linux-musl</code></p><p>cross 会根据 target 拉取对应的容器镜像，然后在容器镜像内部进行编译， 编译的产物也会挂载在本机的 <code>target/x86_64-unknown-linux-musl</code> 目录下。</p><p>有了 <code>cross</code>，就不用再纠结于各个 target 的复杂依赖，可以很清爽的进行跨平台编译了。</p><h2 id="4-cross-实现原理"><a href="#4-cross-实现原理" class="headerlink" title="4. cross 实现原理"></a>4. cross 实现原理</h2><p>那么 <code>cross</code> 是如何实现的呢？<br>主要有两点：</p><ul><li>使用容器镜像屏蔽了各平台的依赖细节</li><li>内部调用 <code>cargo</code> 保证了 cross 与 cargo 命令完全一致的使用体验<h3 id="4-1-使用容器镜像屏蔽了各平台的依赖细节"><a href="#4-1-使用容器镜像屏蔽了各平台的依赖细节" class="headerlink" title="4.1 使用容器镜像屏蔽了各平台的依赖细节"></a>4.1 使用容器镜像屏蔽了各平台的依赖细节</h3>以 <code>target/x86_64-unknown-linux-musl</code> 为例， 执行 cross build 时，cross 会拉取该 target 对应的镜像，并在镜像中执行 cargo build 的命令，该 target 的镜像的 dockerfile 里封装了依赖的细节。</li></ul><p>Dockerfile.x86_64-unknown-linux-musl</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># 基础镜像</span><br><span class="line">FROM ubuntu:20.04</span><br><span class="line"></span><br><span class="line"># 安装基本的lib，如 gcc、make git 等</span><br><span class="line">COPY common.sh lib.sh /</span><br><span class="line">RUN /common.sh</span><br><span class="line"></span><br><span class="line"># 安装 cmake</span><br><span class="line">COPY cmake.sh /</span><br><span class="line">RUN /cmake.sh</span><br><span class="line"></span><br><span class="line"># 安装 xargo</span><br><span class="line">COPY xargo.sh /</span><br><span class="line">RUN /xargo.sh</span><br><span class="line"></span><br><span class="line"># 编译 musl-gcc</span><br><span class="line">COPY musl.sh /</span><br><span class="line">RUN /musl.sh TARGET=x86_64-linux-musl</span><br><span class="line"></span><br><span class="line"># 设置 target 和 链接器</span><br><span class="line">ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=x86_64-linux-musl-gcc \</span><br><span class="line">    CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc \</span><br><span class="line">    CXX_x86_64_unknown_linux_musl=x86_64-linux-musl-g++</span><br></pre></td></tr></table></figure><p>感兴趣的可以看下各脚本的实现细节：<br><a href="https://github.com/rust-embedded/cross/blob/master/docker/Dockerfile.x86_64-unknown-linux-musl">dockerfile 地址</a></p><h3 id="4-2-内部调用-cargo-保证了-cross-与-cargo-命令完全一致的使用体验"><a href="#4-2-内部调用-cargo-保证了-cross-与-cargo-命令完全一致的使用体验" class="headerlink" title="4.2 内部调用 cargo 保证了 cross 与 cargo 命令完全一致的使用体验"></a>4.2 内部调用 <code>cargo</code> 保证了 cross 与 cargo 命令完全一致的使用体验</h3><p>cross 内部在起来对应target 的容器后，内部调用 cargo 以达到同 cargo 的一致体验。参考：<br><a href="https://github.com/rust-embedded/cross/blob/2b2a01220c73ae517129019d436d382412d1928b/src/main.rs#L389">调用代码</a></p><h2 id="5-结语"><a href="#5-结语" class="headerlink" title="5. 结语"></a>5. 结语</h2><p><code>cross</code> 作为一款 <code>0</code> 配置的 Rust 跨平台编译利器，极大地便捷了日常开发和测试、流水线跨平台和发布等工作，<br>此外 cross 也支持 target 自定义镜像，方便用户将自定义的静态链接库等很方便地集成进去。 </p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;1-cross-介绍&quot;&gt;&lt;a href=&quot;#1-cross-介绍&quot; class=&quot;headerlink&quot; title=&quot;1. cross 介绍&quot;&gt;&lt;/a&gt;1. cross 介绍&lt;/h2&gt;&lt;p&gt;cross 是 &lt;code&gt;0&lt;/code&gt; 配置的 Rust 跨平台编译工具，它有着使用简单、功能强大的特点，极大地方便了 rust 跨平台项目的构建、测试和发布。&lt;/p&gt;
+&lt;h2 id=&quot;2-cargo-跨平台编译及问题&quot;&gt;&lt;a href=&quot;#2-cargo-跨平台编译及问题&quot; class=&quot;headerlink&quot; title=&quot;2. cargo 跨平台编译及问题&quot;&gt;&lt;/a&gt;2. cargo 跨平台编译及问题&lt;/h2&gt;&lt;h3 id=&quot;2-1-cargo-跨平台编译&quot;&gt;&lt;a href=&quot;#2-1-cargo-跨平台编译&quot; class=&quot;headerlink&quot; title=&quot;2.1 cargo 跨平台编译&quot;&gt;&lt;/a&gt;2.1 cargo 跨平台编译&lt;/h3&gt;&lt;p&gt;cargo 本身支持跨平台编译，一般使用有如下命令：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;查看 target 列表&lt;br&gt;&lt;code&gt;rustup target list&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;安装新的 target，以 &lt;code&gt;i686-unknown-linux-gnu&lt;/code&gt; 为例&lt;br&gt;&lt;code&gt;rustup target add i686-unknown-linux-gnu&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;编译 linux 32 gpu 的产物&lt;br&gt;&lt;code&gt;cargo build --release --target i686-unknown-linux-gnu&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+    
+      <category term="rust" scheme="https://chenlifei.tech/categories/rust/"/>
+    
+    
+      <category term="rust" scheme="https://chenlifei.tech/tags/rust/"/>
+    
+      <category term="cross" scheme="https://chenlifei.tech/tags/cross/"/>
+    
+      <category term="跨平台编译" scheme="https://chenlifei.tech/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/"/>
+    
+  </entry>
   
   <entry>
     <title>docker实战：原理篇</title>
