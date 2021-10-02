@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 4.2.0">
+<meta name="generator" content="Hexo 5.4.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.jpeg">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpeg">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpeg">
@@ -25,6 +25,7 @@
 <meta property="og:url" content="https://chenlifei.tech/posts/d4a8876c/index.html">
 <meta property="og:site_name" content="大飞哥的博客">
 <meta property="og:description" content="TIME_WAIT状态TIME_WAIT状态何时发生？ 状态持续时间为多久？TIME_WAIT状态在TCP4次挥手是产生。当客户端收到服务端返回FIN信号时，进入TIME_WAIT状态并且向服务端返回ACK，告知服务端我已经收到你的FIN信息。 TIME_WAIT状态的时间是最长分节时间（maximun segment lifetime, MSL）的两倍， 有时候称之为2MSL。 最长分节时间是指">
+<meta property="og:locale">
 <meta property="article:published_time" content="2017-08-13T13:00:20.000Z">
 <meta property="article:modified_time" content="2021-06-14T01:12:32.909Z">
 <meta property="article:author" content="大飞哥">
@@ -357,7 +358,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TIME-WAIT状态"><span class="nav-number">1.</span> <span class="nav-text">TIME_WAIT状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TIME-WAIT状态何时发生？-状态持续时间为多久？"><span class="nav-number">1.1.</span> <span class="nav-text">TIME_WAIT状态何时发生？ 状态持续时间为多久？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为何需要该状态？-该状态设置的时间为何是2MSL"><span class="nav-number">1.2.</span> <span class="nav-text">为何需要该状态？  该状态设置的时间为何是2MSL?</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TIME-WAIT%E7%8A%B6%E6%80%81"><span class="nav-number">1.</span> <span class="nav-text">TIME_WAIT状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TIME-WAIT%E7%8A%B6%E6%80%81%E4%BD%95%E6%97%B6%E5%8F%91%E7%94%9F%EF%BC%9F-%E7%8A%B6%E6%80%81%E6%8C%81%E7%BB%AD%E6%97%B6%E9%97%B4%E4%B8%BA%E5%A4%9A%E4%B9%85%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">TIME_WAIT状态何时发生？ 状态持续时间为多久？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BD%95%E9%9C%80%E8%A6%81%E8%AF%A5%E7%8A%B6%E6%80%81%EF%BC%9F-%E8%AF%A5%E7%8A%B6%E6%80%81%E8%AE%BE%E7%BD%AE%E7%9A%84%E6%97%B6%E9%97%B4%E4%B8%BA%E4%BD%95%E6%98%AF2MSL"><span class="nav-number">1.2.</span> <span class="nav-text">为何需要该状态？  该状态设置的时间为何是2MSL?</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

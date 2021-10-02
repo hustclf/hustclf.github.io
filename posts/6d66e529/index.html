@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 4.2.0">
+<meta name="generator" content="Hexo 5.4.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.jpeg">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpeg">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpeg">
@@ -25,6 +25,7 @@
 <meta property="og:url" content="https://chenlifei.tech/posts/6d66e529/index.html">
 <meta property="og:site_name" content="大飞哥的博客">
 <meta property="og:description" content="容器的本质：特殊的进程进程是程序和其运行所需要的计算机环境的总和，是计算机进行资源分配和调度的独立单位。 而容器则是一种特殊的进程，它被内核隔离在独立的命名空间下，享有独立的网络、磁盘、文件系统，并且被限制了执行所需要的资源（如cpu 内存等）。 容器同宿主机上其他进程一样， 同其他进程共享宿主机的内核，并接受内核的调度。 容器与虚拟机的区别，如下图所示：   图左画出了虚拟机的工作原理。Hype">
+<meta property="og:locale">
 <meta property="og:image" content="https://chenlifei.tech/images/vm_and_container.png">
 <meta property="og:image" content="https://chenlifei.tech/images/vm_and_container_new.jpg">
 <meta property="article:published_time" content="2019-07-04T04:45:19.000Z">
@@ -392,7 +393,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#容器的本质：特殊的进程"><span class="nav-number">1.</span> <span class="nav-text">容器的本质：特殊的进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隔离和限制：Namespace和Cgroup"><span class="nav-number">2.</span> <span class="nav-text">隔离和限制：Namespace和Cgroup</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#隔离"><span class="nav-number">2.1.</span> <span class="nav-text">隔离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#限制"><span class="nav-number">2.2.</span> <span class="nav-text">限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#容器镜像原理：rootfs"><span class="nav-number">3.</span> <span class="nav-text">容器镜像原理：rootfs</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E7%9A%84%E6%9C%AC%E8%B4%A8%EF%BC%9A%E7%89%B9%E6%AE%8A%E7%9A%84%E8%BF%9B%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">容器的本质：特殊的进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%94%E7%A6%BB%E5%92%8C%E9%99%90%E5%88%B6%EF%BC%9ANamespace%E5%92%8CCgroup"><span class="nav-number">2.</span> <span class="nav-text">隔离和限制：Namespace和Cgroup</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%94%E7%A6%BB"><span class="nav-number">2.1.</span> <span class="nav-text">隔离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%90%E5%88%B6"><span class="nav-number">2.2.</span> <span class="nav-text">限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F%E5%8E%9F%E7%90%86%EF%BC%9Arootfs"><span class="nav-number">3.</span> <span class="nav-text">容器镜像原理：rootfs</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

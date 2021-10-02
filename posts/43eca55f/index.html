@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 4.2.0">
+<meta name="generator" content="Hexo 5.4.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.jpeg">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpeg">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpeg">
@@ -25,6 +25,7 @@
 <meta property="og:url" content="https://chenlifei.tech/posts/43eca55f/index.html">
 <meta property="og:site_name" content="大飞哥的博客">
 <meta property="og:description" content="mysql 事务隔离级设置如何查看当前SESSION的事务隔离级mysql 默认的事务隔离级是 REPEATABLE-READ 可以通过以下命令查看当前session的事务隔离级（5.7.20之前） 1234567MariaDB [(none)]&gt; select @@session.tx_isolation;+------------------------+| @@session.tx_i">
+<meta property="og:locale">
 <meta property="article:published_time" content="2017-08-24T03:34:09.000Z">
 <meta property="article:modified_time" content="2021-06-14T01:12:32.910Z">
 <meta property="article:author" content="大飞哥">
@@ -359,7 +360,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql-事务隔离级设置"><span class="nav-number">1.</span> <span class="nav-text">mysql 事务隔离级设置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何查看当前SESSION的事务隔离级"><span class="nav-number">1.1.</span> <span class="nav-text">如何查看当前SESSION的事务隔离级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何修改事务隔离级"><span class="nav-number">1.2.</span> <span class="nav-text">如何修改事务隔离级</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考-mysql手册"><span class="nav-number">1.2.1.</span> <span class="nav-text">参考 mysql手册</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql-%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E8%AE%BE%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">mysql 事务隔离级设置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8DSESSION%E7%9A%84%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7"><span class="nav-number">1.1.</span> <span class="nav-text">如何查看当前SESSION的事务隔离级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7"><span class="nav-number">1.2.</span> <span class="nav-text">如何修改事务隔离级</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%82%E8%80%83-mysql%E6%89%8B%E5%86%8C"><span class="nav-number">1.2.1.</span> <span class="nav-text">参考 mysql手册</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
