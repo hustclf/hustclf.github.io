@@ -1,37 +1,444 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-{% block page_class %}page-post-detail{% endblock %}
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"hustclf.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="容器的本质：特殊的进程进程是程序和其运行所需要的计算机环境的总和，是计算机进行资源分配和调度的独立单位。 而容器则是一种特殊的进程，它被内核隔离在独立的命名空间下，享有独立的网络、磁盘、文件系统，并且被限制了执行所需要的资源（如cpu 内存等）。 容器同宿主机上其他进程一样， 同其他进程共享宿主机的内核，并接受内核的调度。 容器与虚拟机的区别，如下图所示：   图左画出了虚拟机的工作原理。Hype">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker实战：原理篇">
+<meta property="og:url" content="https://hustclf.github.io/posts/6d66e529/index.html">
+<meta property="og:site_name" content="大飞哥的博客">
+<meta property="og:description" content="容器的本质：特殊的进程进程是程序和其运行所需要的计算机环境的总和，是计算机进行资源分配和调度的独立单位。 而容器则是一种特殊的进程，它被内核隔离在独立的命名空间下，享有独立的网络、磁盘、文件系统，并且被限制了执行所需要的资源（如cpu 内存等）。 容器同宿主机上其他进程一样， 同其他进程共享宿主机的内核，并接受内核的调度。 容器与虚拟机的区别，如下图所示：   图左画出了虚拟机的工作原理。Hype">
+<meta property="og:locale">
+<meta property="og:image" content="https://hustclf.github.io/images/vm_and_container.png">
+<meta property="og:image" content="https://hustclf.github.io/images/vm_and_container_new.jpg">
+<meta property="article:published_time" content="2019-07-04T04:45:19.000Z">
+<meta property="article:modified_time" content="2021-10-02T11:02:01.756Z">
+<meta property="article:author" content="大飞哥">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hustclf.github.io/images/vm_and_container.png">
+
+<link rel="canonical" href="https://hustclf.github.io/posts/6d66e529/">
 
 
-{% block content %}
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+  <title>docker实战：原理篇 | 大飞哥的博客</title>
+  
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">大飞哥的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">借书满架，偃仰啸歌，冥然兀坐，万籁有声</p>
+  </div>
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/6d66e529/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="大飞哥">
+      <meta itemprop="description" content="大数据、云原生、微服务等">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大飞哥的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          docker实战：原理篇
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-07-04 12:45:19" itemprop="dateCreated datePublished" datetime="2019-07-04T12:45:19+08:00">2019-07-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-02 19:02:01" itemprop="dateModified" datetime="2021-10-02T19:02:01+08:00">2021-10-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/" itemprop="url" rel="index"><span itemprop="name">云原生</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="容器的本质：特殊的进程"><a href="#容器的本质：特殊的进程" class="headerlink" title="容器的本质：特殊的进程"></a>容器的本质：特殊的进程</h2><p>进程是程序和其运行所需要的计算机环境的总和，是计算机进行资源分配和调度的独立单位。 而容器则是一种特殊的进程，它被内核隔离在独立的命名空间下，享有独立的网络、磁盘、文件系统，并且被限制了执行所需要的资源（如cpu 内存等）。</p>
+<p>容器同宿主机上其他进程一样， 同其他进程共享宿主机的内核，并接受内核的调度。</p>
+<p>容器与虚拟机的区别，如下图所示：</p>
+<img src="/images/vm_and_container.png">
+
+<p>图左画出了虚拟机的工作原理。Hypervisor通过硬件虚拟化功能，模拟出了运行一个操作系统需要的各种硬件，比如 CPU、内存、I/O 设备等等。然后，它在这些虚拟的硬件上安装了一个新的操作系统，即 Guest OS。</p>
+<p>图右中并不存在一个Hypervisor层模拟各个硬件，它仅仅只是对容器进程的运行环境进行了限制，但仍然使用了宿主机的内核。</p>
+<p>因此此图描述的不够严谨，系统中不存在真实运行的各个容器进程，这只不过是障眼法。</p>
+<p>更严谨的应该如下图：</p>
+<img src="/images/vm_and_container_new.jpg">
+此图中，容器进程直接运行在宿主机上，被宿主机内核管理，docker仅仅起到旁路辅助和管理工作。
+
+<span id="more"></span>
+
+<h2 id="隔离和限制：Namespace和Cgroup"><a href="#隔离和限制：Namespace和Cgroup" class="headerlink" title="隔离和限制：Namespace和Cgroup"></a>隔离和限制：Namespace和Cgroup</h2><h3 id="隔离"><a href="#隔离" class="headerlink" title="隔离"></a>隔离</h3><p>docker使用 Linux Namespace将容器进程进行隔离，容器享有独立的进程空间，因此在容器内部使用<code>ps</code>查看，会发现运行的进程id为1，而宿主机的其他资源不再可见。</p>
+<p>docker 使用linux内核提供的namespace进行隔离，相比虚拟机，拥有着<code>启动速度快</code>和<code>高性能</code>的优点。</p>
+<p>但也有其缺点，那就是隔离的不够彻底，有如下问题：</p>
+<ol>
+<li>由于共享内核，无法在window宿主机上运行linux容器、或者在低版本linux宿主机上运行高版本linux容器</li>
+<li>某些资源是全局资源，无法被namespace， 如时间。 若在一个容器内对时间进行修改， 则其他容器及宿主机其他进程也会生效。</li>
+</ol>
+<h3 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h3><p>docker使用Linux Cgroup对容器进程进行资源限制，限制的资源包括：cpu、内存、磁盘、网络带宽等。</p>
+<p>因为容器也是进程，只有对容器进行资源限制，才能避免容器占用过多宿主机资源，从而影响其他容器、宿主机其他进程的正常工作。</p>
+<h2 id="容器镜像原理：rootfs"><a href="#容器镜像原理：rootfs" class="headerlink" title="容器镜像原理：rootfs"></a>容器镜像原理：rootfs</h2><p>通过上面的描述，我们可以对容器有一个准确的定义：容器是一种使用namespace和cgroup进行隔离和限制的进程。</p>
+<p>那容器内访问的文件系统是如何工作的呢？</p>
+<p>答： 通过Mount Namespace将文件系统挂载为容器进程的根文件系统。</p>
+<p>docker 运行的核心原理如下：</p>
+<ol>
+<li>启用 Linux Namespace配置</li>
+<li>设置指定的Cgroup</li>
+<li>切换进程的根目录。</li>
+</ol>
+<p>需要注意的是ootfs 只是一个操作系统所包含的文件、配置和目录，并不包括操作系统内核。在 Linux 操作系统中，这两部分是分开存放的，操作系统只有在开机启动时才会加载指定版本的内核镜像。</p>
+<p>正是由于 rootfs 的存在，容器才有了一个杀手锏： 一致性。</p>
+<p>容器本质是进程，进程的本质是程序及其运行环境的组合，这里的运行环境不单单只java版本、类库版本等，还包括操作系统版本等。</p>
+<p>而rootfs将除linux内核外所有依赖环境进行打包，从而保证了软件开发、测试、部署、交付全流程的一致性。也因此docker改变了软件开发和交付的流程。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># docker</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/8499e970/" rel="prev" title="that_is_me_on_github: 一个统计github contribution的小工具">
+      <i class="fa fa-chevron-left"></i> that_is_me_on_github: 一个统计github contribution的小工具
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/3d1fe733/" rel="next" title="cross: rust 的跨平台编译利器">
+      cross: rust 的跨平台编译利器 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E7%9A%84%E6%9C%AC%E8%B4%A8%EF%BC%9A%E7%89%B9%E6%AE%8A%E7%9A%84%E8%BF%9B%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">容器的本质：特殊的进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%94%E7%A6%BB%E5%92%8C%E9%99%90%E5%88%B6%EF%BC%9ANamespace%E5%92%8CCgroup"><span class="nav-number">2.</span> <span class="nav-text">隔离和限制：Namespace和Cgroup</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%94%E7%A6%BB"><span class="nav-number">2.1.</span> <span class="nav-text">隔离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%90%E5%88%B6"><span class="nav-number">2.2.</span> <span class="nav-text">限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F%E5%8E%9F%E7%90%86%EF%BC%9Arootfs"><span class="nav-number">3.</span> <span class="nav-text">容器镜像原理：rootfs</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">大飞哥</p>
+  <div class="site-description" itemprop="description">大数据、云原生、微服务等</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">大飞哥</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

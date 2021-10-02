@@ -1,37 +1,454 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-{% block page_class %}page-post-detail{% endblock %}
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"hustclf.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="如何获取redis内存使用情况redis提供了info命令，可以获取redis内存使用情况。其中关于redis内存的部分有七个参数，used_memory、used_memory_human、used_memory_rss、used_memory_peak、used_memory_peak_human、mem_fragmentation_ratio、used_memory_lua和mem_allo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis内存使用统计及碎片率分析">
+<meta property="og:url" content="https://hustclf.github.io/posts/a39640ef/index.html">
+<meta property="og:site_name" content="大飞哥的博客">
+<meta property="og:description" content="如何获取redis内存使用情况redis提供了info命令，可以获取redis内存使用情况。其中关于redis内存的部分有七个参数，used_memory、used_memory_human、used_memory_rss、used_memory_peak、used_memory_peak_human、mem_fragmentation_ratio、used_memory_lua和mem_allo">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-04-11T14:38:36.000Z">
+<meta property="article:modified_time" content="2021-10-02T11:02:01.757Z">
+<meta property="article:author" content="大飞哥">
+<meta property="article:tag" content="redis">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://hustclf.github.io/posts/a39640ef/">
 
 
-{% block content %}
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+  <title>redis内存使用统计及碎片率分析 | 大飞哥的博客</title>
+  
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">大飞哥的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">借书满架，偃仰啸歌，冥然兀坐，万籁有声</p>
+  </div>
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/a39640ef/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="大飞哥">
+      <meta itemprop="description" content="大数据、云原生、微服务等">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大飞哥的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          redis内存使用统计及碎片率分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-04-11 22:38:36" itemprop="dateCreated datePublished" datetime="2017-04-11T22:38:36+08:00">2017-04-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-02 19:02:01" itemprop="dateModified" datetime="2021-10-02T19:02:01+08:00">2021-10-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="如何获取redis内存使用情况"><a href="#如何获取redis内存使用情况" class="headerlink" title="如何获取redis内存使用情况"></a>如何获取redis内存使用情况</h1><p>redis提供了info命令，可以获取redis内存使用情况。<br>其中关于redis内存的部分有七个参数，used_memory、used_memory_human、used_memory_rss、used_memory_peak、used_memory_peak_human、mem_fragmentation_ratio、used_memory_lua和mem_allocator。</p>
+<p>各参数的含义如下：</p>
+<ul>
+<li>used_memory : 由 Redis 分配器分配的内存总量，以字节（byte）为单位</li>
+<li>used_memory_human : 以人类可读的格式返回 Redis 分配的内存总量</li>
+<li>used_memory_rss : 从操作系统的角度，返回Redis已分配的内存总量（俗称常驻集大小）。这个值和 top 、 ps 等命令的输出一致。</li>
+<li>used_memory_peak : Redis的内存消耗峰值（以字节为单位）</li>
+<li>used_memory_peak_human : 以人类可读的格式返回 Redis 的内存消耗峰值</li>
+<li>mem_fragmentation_ratio : used_memory_rss 和 used_memory 之间的比率</li>
+<li>used_memory_lua : Lua 引擎所使用的内存大小（以字节为单位）</li>
+<li>mem_allocator : 在编译时指定的，Redis所使用的内存分配器。可以是 libc 、 jemalloc 或者 tcmalloc 。</li>
+</ul>
+<span id="more"></span>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">redis 127.0.0.1:6389&gt; info</span><br><span class="line">    ...</span><br><span class="line">    used_memory:832323728</span><br><span class="line">    used_memory_human:793.77M</span><br><span class="line">    used_memory_rss:874582016</span><br><span class="line">    used_memory_peak:1067840504</span><br><span class="line">    used_memory_peak_human:1018.37M</span><br><span class="line">    mem_fragmentation_ratio:1.05</span><br><span class="line">    mem_allocator:jemalloc-2.2.5</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>  从以上参数的官方介绍来看，统计redis内存使用量主要是used_memory used_memory_rss used_memory_lua,这三部分。其他参数（除mem_allocator）都是由它们产生的统计值。</p>
+<p>其中</p>
+<ul>
+<li><p>used_memory_peak统计的是used_memory的最大值。</p>
+</li>
+<li><p>mem_fragmentation_ratio统计的是used_memory_rss和used_memory的比值，其值与1的大小关系，代表redis的内存碎片率情况。正常情况下，从操作系统统计的内存使用量（used_memory_rss）应该稍大于redis内存分配器统计的内存使用（used_momory）,即mem_fragmentation_ratio应稍大于1。若mem_fragmentation远大于1，代表操作系统实际分配内存要远大于redis自身统计值，代表redis内部可能有内存碎片，没有被redis统计到；若mem_fragmentation小于1，代表操作系统实际分配内存小于redis自身统计值，此时表示Redis的部分内存被操作系统换出交换空间了，此时redis会产生明显的延迟。</p>
+</li>
+</ul>
+<h1 id="从源码跟踪这些参数"><a href="#从源码跟踪这些参数" class="headerlink" title="从源码跟踪这些参数"></a>从源码跟踪这些参数</h1><p>获取INFO返回信息的入口定义在redis.c的genRedisInfoString中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">//redis.c</span><br><span class="line"></span><br><span class="line">    sds genRedisInfoString(char *section) &#123;</span><br><span class="line">    ...</span><br><span class="line">    /* Memory */</span><br><span class="line">        info = sdscatprintf(info,</span><br><span class="line">            &quot;# Memory\r\n&quot;</span><br><span class="line">            &quot;used_memory:%zu\r\n&quot;</span><br><span class="line">            &quot;used_memory_human:%s\r\n&quot;</span><br><span class="line">            &quot;used_memory_rss:%zu\r\n&quot;</span><br><span class="line">            &quot;used_memory_peak:%zu\r\n&quot;</span><br><span class="line">            &quot;used_memory_peak_human:%s\r\n&quot;</span><br><span class="line">            &quot;used_memory_lua:%lld\r\n&quot;</span><br><span class="line">            &quot;mem_fragmentation_ratio:%.2f\r\n&quot;</span><br><span class="line">            &quot;mem_allocator:%s\r\n&quot;,</span><br><span class="line">            zmalloc_used,</span><br><span class="line">            hmem,</span><br><span class="line">            server.resident_set_size,</span><br><span class="line">            server.stat_peak_memory,</span><br><span class="line">            peak_hmem,</span><br><span class="line">            ((long long)lua_gc(server.lua,LUA_GCCOUNT,0))*1024LL,</span><br><span class="line">            zmalloc_get_fragmentation_ratio(server.resident_set_size),</span><br><span class="line">            ZMALLOC_LIB</span><br><span class="line">            );</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+<pre><code>used_memory       =&gt; zmalloc_used
+used_memory_rss   =&gt; server.resident_set_size
+used_memory_peak  =&gt; server.stat_pear_memory
+used_memory_lua   =&gt; lua_gc(server.lua,LUA_GCCOUNT,0))*1024LL</code></pre><h2 id="跟踪used-memory"><a href="#跟踪used-memory" class="headerlink" title="跟踪used_memory"></a>跟踪used_memory</h2><p>used_memory对应的变量zmalloc_used，是通过zmalloc_used_memory()返回的，该函数定义在zmalloc.c中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">// zmalloc.c</span><br><span class="line"></span><br><span class="line">size_t zmalloc_used_memory(void) &#123;</span><br><span class="line">    size_t um;</span><br><span class="line"></span><br><span class="line">    if (zmalloc_thread_safe) &#123;</span><br><span class="line">#ifdef HAVE_ATOMIC</span><br><span class="line">        um = __sync_add_and_fetch(&amp;used_memory, 0);</span><br><span class="line">#else</span><br><span class="line">        pthread_mutex_lock(&amp;used_memory_mutex);</span><br><span class="line">        um = used_memory;</span><br><span class="line">        pthread_mutex_unlock(&amp;used_memory_mutex);</span><br><span class="line">#endif</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        um = used_memory;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return um;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从该函数可以看出，zmalloc_used的值取自used_memory变量。当然针对是否线程安全以及是否是有原子性操作，对used_memory的读取策略不同，但都是读取的used_memory的值。</p>
+<p>used_memory的初始化以及修改操作都在zmalloc.c中完成。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">//zmalloc.c</span><br><span class="line"></span><br><span class="line">// 根据HAVE_ATOMIC来定义used_memory的加和减的方式</span><br><span class="line">#ifdef HAVE_ATOMIC</span><br><span class="line">#define update_zmalloc_stat_add(__n) __sync_add_and_fetch(&amp;used_memory, (__n))</span><br><span class="line">#define update_zmalloc_stat_sub(__n) __sync_sub_and_fetch(&amp;used_memory, (__n))</span><br><span class="line">#else</span><br><span class="line">#define update_zmalloc_stat_add(__n) do &#123; \</span><br><span class="line">    pthread_mutex_lock(&amp;used_memory_mutex); \</span><br><span class="line">    used_memory += (__n); \</span><br><span class="line">    pthread_mutex_unlock(&amp;used_memory_mutex); \</span><br><span class="line">&#125; while(0)</span><br><span class="line"></span><br><span class="line">#define update_zmalloc_stat_sub(__n) do &#123; \</span><br><span class="line">    pthread_mutex_lock(&amp;used_memory_mutex); \</span><br><span class="line">    used_memory -= (__n); \</span><br><span class="line">    pthread_mutex_unlock(&amp;used_memory_mutex); \</span><br><span class="line">&#125; while(0)</span><br><span class="line"></span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#define update_zmalloc_stat_alloc(__n) do &#123; \</span><br><span class="line">    size_t _n = (__n); \</span><br><span class="line">    if (_n&amp;(sizeof(long)-1)) _n += sizeof(long)-(_n&amp;(sizeof(long)-1)); \</span><br><span class="line">    if (zmalloc_thread_safe) &#123; \</span><br><span class="line">        update_zmalloc_stat_add(_n); \</span><br><span class="line">    &#125; else &#123; \</span><br><span class="line">        used_memory += _n; \</span><br><span class="line">    &#125; \</span><br><span class="line">&#125; while(0)</span><br><span class="line"></span><br><span class="line">#define update_zmalloc_stat_free(__n) do &#123; \</span><br><span class="line">    size_t _n = (__n); \</span><br><span class="line">    if (_n&amp;(sizeof(long)-1)) _n += sizeof(long)-(_n&amp;(sizeof(long)-1)); \</span><br><span class="line">    if (zmalloc_thread_safe) &#123; \</span><br><span class="line">        update_zmalloc_stat_sub(_n); \</span><br><span class="line">    &#125; else &#123; \</span><br><span class="line">        used_memory -= _n; \</span><br><span class="line">    &#125; \</span><br><span class="line">&#125; while(0)</span><br><span class="line"></span><br><span class="line">// used_memory 初始化</span><br><span class="line">static size_t used_memory = 0;</span><br><span class="line">static int zmalloc_thread_safe = 0;</span><br></pre></td></tr></table></figure>
+<h2 id="跟踪used-memory-rss"><a href="#跟踪used-memory-rss" class="headerlink" title="跟踪used_memory_rss"></a>跟踪used_memory_rss</h2><p>used_memory_rss对应的变量server.resident_set_size，该值来自于redis.c中的zmalloc_get_rss函数，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//redis.c</span><br><span class="line"></span><br><span class="line">    /* Sample the RSS here since this is a relatively slow call. */</span><br><span class="line">    server.resident_set_size = zmalloc_get_rss();</span><br></pre></td></tr></table></figure>
+
+<p>这个函数定义在zmalloc.c中，会根据不同的操作系统，读取对应的操作系统分配的内存</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">// zmalloc.c</span><br><span class="line"></span><br><span class="line">// 如果是linux环境，则读取proc信息</span><br><span class="line">#if defined(HAVE_PROC_STAT)</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/stat.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line"></span><br><span class="line">size_t zmalloc_get_rss(void) &#123;</span><br><span class="line">    int page = sysconf(_SC_PAGESIZE);</span><br><span class="line">    size_t rss;</span><br><span class="line">    char buf[4096];</span><br><span class="line">    char filename[256];</span><br><span class="line">    int fd, count;</span><br><span class="line">    char *p, *x;</span><br><span class="line"></span><br><span class="line">    snprintf(filename,256,&quot;/proc/%d/stat&quot;,getpid());</span><br><span class="line">    if ((fd = open(filename,O_RDONLY)) == -1) return 0;</span><br><span class="line">    if (read(fd,buf,4096) &lt;= 0) &#123;</span><br><span class="line">        close(fd);</span><br><span class="line">        return 0;</span><br><span class="line">    &#125;</span><br><span class="line">    close(fd);</span><br><span class="line"></span><br><span class="line">    p = buf;</span><br><span class="line">    count = 23; /* RSS is the 24th field in /proc/&lt;pid&gt;/stat */</span><br><span class="line">    while(p &amp;&amp; count--) &#123;</span><br><span class="line">        p = strchr(p,&#x27; &#x27;);</span><br><span class="line">        if (p) p++;</span><br><span class="line">    &#125;</span><br><span class="line">    if (!p) return 0;</span><br><span class="line">    x = strchr(p,&#x27; &#x27;);</span><br><span class="line">    if (!x) return 0;</span><br><span class="line">    *x = &#x27;\0&#x27;;</span><br><span class="line"></span><br><span class="line">    rss = strtoll(p,NULL,10);</span><br><span class="line">    rss *= page;</span><br><span class="line">    return rss;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 如果是apple, 则读取task info</span><br><span class="line">#elif defined(HAVE_TASKINFO)</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/sysctl.h&gt;</span><br><span class="line">#include &lt;mach/task.h&gt;</span><br><span class="line">#include &lt;mach/mach_init.h&gt;</span><br><span class="line"></span><br><span class="line">size_t zmalloc_get_rss(void) &#123;</span><br><span class="line">    task_t task = MACH_PORT_NULL;</span><br><span class="line">    struct task_basic_info t_info;</span><br><span class="line">    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;</span><br><span class="line"></span><br><span class="line">    if (task_for_pid(current_task(), getpid(), &amp;task) != KERN_SUCCESS)</span><br><span class="line">        return 0;</span><br><span class="line">    task_info(task, TASK_BASIC_INFO, (task_info_t)&amp;t_info, &amp;t_info_count);</span><br><span class="line"></span><br><span class="line">    return t_info.resident_size;</span><br><span class="line">&#125;</span><br><span class="line">// 如果都不是，则读取used_memory作为used_memory_rss</span><br><span class="line">#else</span><br><span class="line">size_t zmalloc_get_rss(void) &#123;</span><br><span class="line">    /* If we can&#x27;t get the RSS in an OS-specific way for this system just</span><br><span class="line">     * return the memory usage we estimated in zmalloc()..</span><br><span class="line">     *</span><br><span class="line">     * Fragmentation will appear to be always 1 (no fragmentation)</span><br><span class="line">     * of course... */</span><br><span class="line">    return zmalloc_used_memory();</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="跟踪used-memory-lua"><a href="#跟踪used-memory-lua" class="headerlink" title="跟踪used_memory_lua"></a>跟踪used_memory_lua</h2><p>used_memory_lua从lua_gc(server.lua,LUA_GCCOUNT,0))*1024LL获取，lua_gc定义在redis\deps\lua\src\lapi.c，通过该函数可以获取LUA引擎占用的内存。（具体lua内部是如何获取的就不清楚了。。）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">// deps\lua\src\lapi.c</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">** Garbage-collection function</span><br><span class="line">*/</span><br><span class="line"></span><br><span class="line">LUA_API int lua_gc (lua_State *L, int what, int data) &#123;</span><br><span class="line">  int res = 0;</span><br><span class="line">  global_State *g;</span><br><span class="line">  lua_lock(L);</span><br><span class="line">  g = G(L);</span><br><span class="line">  switch (what) &#123;</span><br><span class="line">    case LUA_GCSTOP: &#123;</span><br><span class="line">      g-&gt;GCthreshold = MAX_LUMEM;</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    case LUA_GCRESTART: &#123;</span><br><span class="line">      g-&gt;GCthreshold = g-&gt;totalbytes;</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    case LUA_GCCOLLECT: &#123;</span><br><span class="line">      luaC_fullgc(L);</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    case LUA_GCCOUNT: &#123;</span><br><span class="line">      /* GC values are expressed in Kbytes: #bytes/2^10 */</span><br><span class="line">      res = cast_int(g-&gt;totalbytes &gt;&gt; 10);</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    case LUA_GCCOUNTB: &#123;</span><br><span class="line">      res = cast_int(g-&gt;totalbytes &amp; 0x3ff);</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    case LUA_GCSTEP: &#123;</span><br><span class="line">      lu_mem a = (cast(lu_mem, data) &lt;&lt; 10);</span><br><span class="line">      if (a &lt;= g-&gt;totalbytes)</span><br><span class="line">        g-&gt;GCthreshold = g-&gt;totalbytes - a;</span><br><span class="line">      else</span><br><span class="line">        g-&gt;GCthreshold = 0;</span><br><span class="line">      while (g-&gt;GCthreshold &lt;= g-&gt;totalbytes) &#123;</span><br><span class="line">        luaC_step(L);</span><br><span class="line">        if (g-&gt;gcstate == GCSpause) &#123;  /* end of cycle? */</span><br><span class="line">          res = 1;  /* signal it */</span><br><span class="line">          break;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    case LUA_GCSETPAUSE: &#123;</span><br><span class="line">      res = g-&gt;gcpause;</span><br><span class="line">      g-&gt;gcpause = data;</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    case LUA_GCSETSTEPMUL: &#123;</span><br><span class="line">      res = g-&gt;gcstepmul;</span><br><span class="line">      g-&gt;gcstepmul = data;</span><br><span class="line">      break;</span><br><span class="line">    &#125;</span><br><span class="line">    default: res = -1;  /* invalid option */</span><br><span class="line">  &#125;</span><br><span class="line">  lua_unlock(L);</span><br><span class="line">  return res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="跟踪used-memory-peak"><a href="#跟踪used-memory-peak" class="headerlink" title="跟踪used_memory_peak"></a>跟踪used_memory_peak</h2><p>used_memory_peak对应server.stat_peak_memory。该值每次读取时，都会通过zmalloc_used_memory()获取最新的used_memory的值，并记录used_memory的最大值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//redis.c</span><br><span class="line">        // used_memory是通过时间事件更新的，为防止出现峰值内存小于当前redis使用内存的情况，此时会重新读取一次最新的内存值，并更新峰值内存</span><br><span class="line">        size_t zmalloc_used = zmalloc_used_memory();</span><br><span class="line">        if (zmalloc_used &gt; server.stat_peak_memory)</span><br><span class="line">            server.stat_peak_memory = zmalloc_used;</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="内存碎片产生原因"><a href="#内存碎片产生原因" class="headerlink" title="内存碎片产生原因"></a>内存碎片产生原因</h1><ul>
+<li><p>操作系统使用不连续的内存碎片来提供给内存分配器。<br>当操作系统没有足够的内存时，无法提供整块的内存供redis内存分配器，内存分配器对内存碎片的利用率较低。</p>
+</li>
+<li><p>内存分配器为加快程序运行，额外使用了内存</p>
+</li>
+<li><p>内存分配器释放了内存块，但没有将内存返还给系统</p>
+</li>
+<li><p>分配内存块大小与内存分配器的类型（libc    jemalloc tcmalloc)不同, 产生的内存碎片量也不同。</p>
+</li>
+<li><p>如果used_memory_peak和used_memory_rss大致相等，且远大于used_memory,则说明额外的内存碎片正在产生。</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/redis/" rel="tag"># redis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/posts/d4a8876c/" rel="next" title="Tcp协议TIME_WAIT状态">
+      Tcp协议TIME_WAIT状态 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96redis%E5%86%85%E5%AD%98%E4%BD%BF%E7%94%A8%E6%83%85%E5%86%B5"><span class="nav-number">1.</span> <span class="nav-text">如何获取redis内存使用情况</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8E%E6%BA%90%E7%A0%81%E8%B7%9F%E8%B8%AA%E8%BF%99%E4%BA%9B%E5%8F%82%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">从源码跟踪这些参数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%9F%E8%B8%AAused-memory"><span class="nav-number">3.1.</span> <span class="nav-text">跟踪used_memory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%9F%E8%B8%AAused-memory-rss"><span class="nav-number">3.2.</span> <span class="nav-text">跟踪used_memory_rss</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%9F%E8%B8%AAused-memory-lua"><span class="nav-number">3.3.</span> <span class="nav-text">跟踪used_memory_lua</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%9F%E8%B8%AAused-memory-peak"><span class="nav-number">3.4.</span> <span class="nav-text">跟踪used_memory_peak</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%A2%8E%E7%89%87%E4%BA%A7%E7%94%9F%E5%8E%9F%E5%9B%A0"><span class="nav-number">4.</span> <span class="nav-text">内存碎片产生原因</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">大飞哥</p>
+  <div class="site-description" itemprop="description">大数据、云原生、微服务等</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">大飞哥</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

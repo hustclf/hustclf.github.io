@@ -1,37 +1,406 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-{% block page_class %}page-post-detail{% endblock %}
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"hustclf.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="TIME_WAIT状态TIME_WAIT状态何时发生？ 状态持续时间为多久？TIME_WAIT状态在TCP4次挥手是产生。当客户端收到服务端返回FIN信号时，进入TIME_WAIT状态并且向服务端返回ACK，告知服务端我已经收到你的FIN信息。 TIME_WAIT状态的时间是最长分节时间（maximun segment lifetime, MSL）的两倍， 有时候称之为2MSL。 最长分节时间是指">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tcp协议TIME_WAIT状态">
+<meta property="og:url" content="https://hustclf.github.io/posts/d4a8876c/index.html">
+<meta property="og:site_name" content="大飞哥的博客">
+<meta property="og:description" content="TIME_WAIT状态TIME_WAIT状态何时发生？ 状态持续时间为多久？TIME_WAIT状态在TCP4次挥手是产生。当客户端收到服务端返回FIN信号时，进入TIME_WAIT状态并且向服务端返回ACK，告知服务端我已经收到你的FIN信息。 TIME_WAIT状态的时间是最长分节时间（maximun segment lifetime, MSL）的两倍， 有时候称之为2MSL。 最长分节时间是指">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-08-13T13:00:20.000Z">
+<meta property="article:modified_time" content="2021-10-02T11:02:01.755Z">
+<meta property="article:author" content="大飞哥">
+<meta property="article:tag" content="tcp&#x2F;ip">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://hustclf.github.io/posts/d4a8876c/">
 
 
-{% block content %}
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+  <title>Tcp协议TIME_WAIT状态 | 大飞哥的博客</title>
+  
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">大飞哥的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">借书满架，偃仰啸歌，冥然兀坐，万籁有声</p>
+  </div>
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/d4a8876c/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="大飞哥">
+      <meta itemprop="description" content="大数据、云原生、微服务等">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大飞哥的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Tcp协议TIME_WAIT状态
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-08-13 21:00:20" itemprop="dateCreated datePublished" datetime="2017-08-13T21:00:20+08:00">2017-08-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-02 19:02:01" itemprop="dateModified" datetime="2021-10-02T19:02:01+08:00">2021-10-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="TIME-WAIT状态"><a href="#TIME-WAIT状态" class="headerlink" title="TIME_WAIT状态"></a>TIME_WAIT状态</h2><h3 id="TIME-WAIT状态何时发生？-状态持续时间为多久？"><a href="#TIME-WAIT状态何时发生？-状态持续时间为多久？" class="headerlink" title="TIME_WAIT状态何时发生？ 状态持续时间为多久？"></a>TIME_WAIT状态何时发生？ 状态持续时间为多久？</h3><p>TIME_WAIT状态在TCP4次挥手是产生。当客户端收到服务端返回FIN信号时，进入TIME_WAIT状态并且向服务端返回ACK，告知服务端我已经收到你的FIN信息。</p>
+<p>TIME_WAIT状态的时间是最长分节时间（maximun segment lifetime, MSL）的两倍， 有时候称之为2MSL。 最长分节时间是指，一次TCP报文在服务端和客户端之前传送存活的最长时间，若超过这个时间，该报文仍未到达目的地，则可认为该报文已被丢弃。</p>
+<p>最长分节时间一般由ip报文的TTL标识，TTL代表一个ip报文传递时通过一个ip报文的最大跳数（255），ip报文每经过一个路由器，TTL会减1，当TTL为0时，路由器会将该报文丢弃。</p>
+<h3 id="为何需要该状态？-该状态设置的时间为何是2MSL"><a href="#为何需要该状态？-该状态设置的时间为何是2MSL" class="headerlink" title="为何需要该状态？  该状态设置的时间为何是2MSL?"></a>为何需要该状态？  该状态设置的时间为何是2MSL?</h3><span id="more"></span>
+
+<p>该状态存在有两个理由。<br>（1） 可靠地实现TCP全双工连接的终止<br>这句话比较拗口。 意思是在在四次挥手时，如果最后的分节报文丢失（ip报文会丢），客户端也能够正常处理结果，而不会出错。</p>
+<p>有这样一种情况。四次挥手时，客户端最后发送给服务端的ACK丢失时， 服务端会认为客户端没收到自己的FIN，然后会重传FIN。此时客户端其实已经收到过第一个FIN了，如果客户端不维护状态信息，它将返回一个RST分节，该分节将会被服务端解析成错误。</p>
+<p>因此如果tcp想可靠地关闭连接，那就要能够处理四次挥手时任何一个分节数据丢失的情况。</p>
+<p>（2） 保证老的重复分节已经在网络中消失。<br>假设a和b之间建立了一个连接A1-B1， 连接关闭后，a和b之间又建立了连接A2-B2。 但连接A1-B1关闭后，可能有些报文数据由于网络原因（如发生了路由循环）延迟了一段时间后，又到底了a或者b。但此时已经是A2-B2连接，该报文是无效的。</p>
+<p> 设置TIME_WAIT时间为2MSL，就保证了建立新的连接时，之前的连接报文在网络中都已经失效了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/tcp-ip/" rel="tag"># tcp/ip</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/a39640ef/" rel="prev" title="redis内存使用统计及碎片率分析">
+      <i class="fa fa-chevron-left"></i> redis内存使用统计及碎片率分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/43eca55f/" rel="next" title="mysql事务隔离级设置">
+      mysql事务隔离级设置 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TIME-WAIT%E7%8A%B6%E6%80%81"><span class="nav-number">1.</span> <span class="nav-text">TIME_WAIT状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TIME-WAIT%E7%8A%B6%E6%80%81%E4%BD%95%E6%97%B6%E5%8F%91%E7%94%9F%EF%BC%9F-%E7%8A%B6%E6%80%81%E6%8C%81%E7%BB%AD%E6%97%B6%E9%97%B4%E4%B8%BA%E5%A4%9A%E4%B9%85%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">TIME_WAIT状态何时发生？ 状态持续时间为多久？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BD%95%E9%9C%80%E8%A6%81%E8%AF%A5%E7%8A%B6%E6%80%81%EF%BC%9F-%E8%AF%A5%E7%8A%B6%E6%80%81%E8%AE%BE%E7%BD%AE%E7%9A%84%E6%97%B6%E9%97%B4%E4%B8%BA%E4%BD%95%E6%98%AF2MSL"><span class="nav-number">1.2.</span> <span class="nav-text">为何需要该状态？  该状态设置的时间为何是2MSL?</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">大飞哥</p>
+  <div class="site-description" itemprop="description">大数据、云原生、微服务等</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">大飞哥</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

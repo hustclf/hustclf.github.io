@@ -1,37 +1,415 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-{% block page_class %}page-post-detail{% endblock %}
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"hustclf.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="修复kafkacat json format的bugkafkacat是一款c语言实现的kafka client cli, 不同于kafka官方包里的cli，使用比较繁琐，并且依赖jvm才能运行， kafkacat是一个小巧的cmd， 依赖一个基础c library: librdkafka,能够很方便地对kafka进行一些基本操作，如list、producer、consumer等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="修复kafkacat json format的bug">
+<meta property="og:url" content="https://hustclf.github.io/posts/66a1e560/index.html">
+<meta property="og:site_name" content="大飞哥的博客">
+<meta property="og:description" content="修复kafkacat json format的bugkafkacat是一款c语言实现的kafka client cli, 不同于kafka官方包里的cli，使用比较繁琐，并且依赖jvm才能运行， kafkacat是一个小巧的cmd， 依赖一个基础c library: librdkafka,能够很方便地对kafka进行一些基本操作，如list、producer、consumer等。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-01-19T03:16:29.000Z">
+<meta property="article:modified_time" content="2021-10-02T11:02:01.758Z">
+<meta property="article:author" content="大飞哥">
+<meta property="article:tag" content="kafkacat">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://hustclf.github.io/posts/66a1e560/">
 
 
-{% block content %}
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+  <title>修复kafkacat json format的bug | 大飞哥的博客</title>
+  
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">大飞哥的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">借书满架，偃仰啸歌，冥然兀坐，万籁有声</p>
+  </div>
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/66a1e560/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="大飞哥">
+      <meta itemprop="description" content="大数据、云原生、微服务等">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大飞哥的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          修复kafkacat json format的bug
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-01-19 11:16:29" itemprop="dateCreated datePublished" datetime="2019-01-19T11:16:29+08:00">2019-01-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-02 19:02:01" itemprop="dateModified" datetime="2021-10-02T19:02:01+08:00">2021-10-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%A4%BE%E5%8C%BA%E8%B4%A1%E7%8C%AE/" itemprop="url" rel="index"><span itemprop="name">社区贡献</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="修复kafkacat-json-format的bug"><a href="#修复kafkacat-json-format的bug" class="headerlink" title="修复kafkacat json format的bug"></a>修复kafkacat json format的bug</h1><p>kafkacat是一款c语言实现的kafka client cli, 不同于kafka官方包里的cli，使用比较繁琐，并且依赖jvm才能运行， kafkacat是一个小巧的cmd， 依赖一个基础c library: <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/edenhill/librdkafka">librdkafka</a>,能够很方便地对kafka进行一些基本操作，如list、producer、consumer等。</p>
+<span id="more"></span>
+
+<p>kafkacat的作者是<a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/edenhill">edenhill</a>， 同时也是librdkafka的作者，现在应该是kafka的母公司，confluent的一名工程师</p>
+<h2 id="如何发现该bug？"><a href="#如何发现该bug？" class="headerlink" title="如何发现该bug？"></a>如何发现该bug？</h2><p>kafka在v0.10之后的版本，每条数据除了key 和message之外，还会携带一条timestamp， 代表该条日志的时间.( <a target="_blank" rel="external nofollow noopener noreferrer" href="https://stackoverflow.com/questions/39514167/retrieve-timestamp-based-data-from-kafka">参考</a> )</p>
+<p>我在使用kafka streams开发应用时，发现我的输出的topic总是会被kafka清理掉， 我产生的日志使用event timestamp作为执行的timestamp，数据是1月以前的，因此我怀疑输出的topic的日志，timestamp使用的是event timestamp，因此被kafka认为是过期日志，清理掉了。</p>
+<p>kafkacat是支持消费时指定固定的格式的，通过指定 <code>-J</code> 参数，可以打印json格式的message,其中会携带该message的所有源数据，包括： partition, key, value, timestamp等。</p>
+<p>因此我使用kafkacat进行消费时，发现了该bug， 按照json格式消费时，展示timestamp字段不正确，因此我提了相关issue， 并通过阅读源码，修改了该bug。</p>
+<h2 id="issue地址"><a href="#issue地址" class="headerlink" title="issue地址"></a>issue地址</h2><p><a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/edenhill/kafkacat/issues/167">issue</a></p>
+<h2 id="pr地址"><a href="#pr地址" class="headerlink" title="pr地址"></a>pr地址</h2><p><a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/edenhill/kafkacat/pull/166">pr</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/kafkacat/" rel="tag"># kafkacat</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/c1cadd8e/" rel="prev" title="git branch模型最佳实践[译]">
+      <i class="fa fa-chevron-left"></i> git branch模型最佳实践[译]
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/aaa3e6e1/" rel="next" title="使用logstash将kafka数据写入elasticsearch">
+      使用logstash将kafka数据写入elasticsearch <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BF%AE%E5%A4%8Dkafkacat-json-format%E7%9A%84bug"><span class="nav-number">1.</span> <span class="nav-text">修复kafkacat json format的bug</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%8F%91%E7%8E%B0%E8%AF%A5bug%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">如何发现该bug？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#issue%E5%9C%B0%E5%9D%80"><span class="nav-number">1.2.</span> <span class="nav-text">issue地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pr%E5%9C%B0%E5%9D%80"><span class="nav-number">1.3.</span> <span class="nav-text">pr地址</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">大飞哥</p>
+  <div class="site-description" itemprop="description">大数据、云原生、微服务等</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">大飞哥</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
