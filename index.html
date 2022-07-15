@@ -200,7 +200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-07-15 18:41:52" itemprop="dateModified" datetime="2022-07-15T18:41:52+08:00">2022-07-15</time>
+                <time title="Modified: 2022-07-15 19:06:36" itemprop="dateModified" datetime="2022-07-15T19:06:36+08:00">2022-07-15</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -223,7 +223,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h2><p>helm 是非常流行的 k8s 应用管理工具。类似于 python 中的 pip，我们使用 Chart 来定义一个 k8s 应用，使用 helm 来进行应用的安装、升级、发布和回滚。<br>本文旨在对 helm (v3) 的工作原理进行剖析，通过代码走查了解 helm 执行的具体过程，当使用 helm 出现问题时能更容易地定位。 （helm v2 的架构是 cli + server 的组合，已废弃）<br>源码的版本是<a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/helm/helm/tree/v3.8.0">v3.8.0</a>。</p>
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>helm 是非常流行的 k8s 应用管理工具。类似于 python 中的 pip，我们使用 Chart 来定义一个 k8s 应用，使用 helm 来进行应用的安装、升级、发布和回滚。<br>本文旨在对 helm (v3) 的工作原理进行剖析，通过代码走查了解 helm 执行的具体过程，当使用 helm 出现问题时能更容易地定位。 （helm v2 的架构是 cli + server 的组合，已废弃）<br>源码的版本是<a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/helm/helm/tree/v3.8.0">v3.8.0</a>。</p>
 <p>阅读本文的一些背景知识：</p>
 <ul>
 <li>k8s 的基本概念：如 Deployment、 Service</li>
@@ -233,6 +233,88 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/posts/413a7d5a/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/5bd51536/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="大飞哥">
+      <meta itemprop="description" content="大数据、云原生、微服务等">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大飞哥的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/5bd51536/" class="post-title-link" itemprop="url">TAT agent（一）：架构介绍</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-01-14 18:51:40" itemprop="dateCreated datePublished" datetime="2022-01-14T18:51:40+08:00">2022-01-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-07-15 19:06:02" itemprop="dateModified" datetime="2022-07-15T19:06:02+08:00">2022-07-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/" itemprop="url" rel="index"><span itemprop="name">云原生</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>自动化助手（TencentCloud Automation Tools，TAT）是云服务器 CVM 和轻量应用服务器 Lighthouse 的原生运维部署工具。自动化助手提供了一种自动化的远程操作方式，无需登录及密码，即可批量执行命令（Shell、PowerShell 及 Python 等），完成运行自动化运维脚本、轮询进程、安装/卸载软件、更新应用及安装补丁等任务。</p>
+<p>TAT agent 运行在CVM 或 Lighthouse 内部，负责执行具体的任务，并上报执行结果给服务端。<br><img src="/images/tat/1.png"></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/5bd51536/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -279,10 +361,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-10-02 18:27:56 / Modified: 19:21:27" itemprop="dateCreated datePublished" datetime="2021-10-02T18:27:56+08:00">2021-10-02</time>
+              <time title="Created: 2021-10-02 18:27:56" itemprop="dateCreated datePublished" datetime="2021-10-02T18:27:56+08:00">2021-10-02</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-07-15 19:07:39" itemprop="dateModified" datetime="2022-07-15T19:07:39+08:00">2022-07-15</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -938,91 +1026,6 @@
   
   
 
-      
-  
-  
-  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/c1cadd8e/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="大飞哥">
-      <meta itemprop="description" content="大数据、云原生、微服务等">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="大飞哥的博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/c1cadd8e/" class="post-title-link" itemprop="url">git branch模型最佳实践[译]</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-12-22 00:15:38" itemprop="dateCreated datePublished" datetime="2017-12-22T00:15:38+08:00">2017-12-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-10-02 19:02:01" itemprop="dateModified" datetime="2021-10-02T19:02:01+08:00">2021-10-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E7%A8%8B%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">工程化</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <hr>
-<p>【原文链接】：<br><a target="_blank" rel="external nofollow noopener noreferrer" href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model</a></p>
-<hr>
-<h2 id="git-branch大图"><a href="#git-branch大图" class="headerlink" title="git branch大图"></a>git branch大图</h2><p>下图是git branch 模型的全景图，可以先阅读后续章节，最后再回头查看</p>
-<img src="/images/gitflow.png">
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/c1cadd8e/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1091,7 +1094,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1102,7 +1105,7 @@
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">26</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

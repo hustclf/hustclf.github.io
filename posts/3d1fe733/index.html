@@ -28,7 +28,7 @@
 <meta property="og:description" content="1. cross 介绍cross 是 0 配置的 Rust 跨平台编译工具，它有着使用简单、功能强大的特点，极大地方便了 rust 跨平台项目的构建、测试和发布。 2. cargo 跨平台编译及问题2.1 cargo 跨平台编译cargo 本身支持跨平台编译，一般使用有如下命令：  查看 target 列表rustup target list  安装新的 target，以 i686-unknown">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-10-02T10:27:56.000Z">
-<meta property="article:modified_time" content="2021-10-02T11:21:27.001Z">
+<meta property="article:modified_time" content="2022-07-15T11:07:39.983Z">
 <meta property="article:author" content="大飞哥">
 <meta property="article:tag" content="rust">
 <meta property="article:tag" content="cross">
@@ -197,10 +197,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-10-02 18:27:56 / Modified: 19:21:27" itemprop="dateCreated datePublished" datetime="2021-10-02T18:27:56+08:00">2021-10-02</time>
+              <time title="Created: 2021-10-02 18:27:56" itemprop="dateCreated datePublished" datetime="2021-10-02T18:27:56+08:00">2021-10-02</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-07-15 19:07:39" itemprop="dateModified" datetime="2022-07-15T19:07:39+08:00">2022-07-15</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -242,7 +248,7 @@
 <p>如果要支持多平台的产物编译，除了要安装对应的musl target，还需要各个平台的 musl libc 和 musl-gcc 版本，搭建跨平台编译环境就很不方便了。</p>
 <h2 id="3-cross-进行跨平台编译"><a href="#3-cross-进行跨平台编译" class="headerlink" title="3. cross 进行跨平台编译"></a>3. cross 进行跨平台编译</h2><p>于是 <code>cross</code> 就应运而生了，它通过容器技术屏蔽了各个环境编译依赖的细节，实现了 <code>0</code> 配置的跨平台编译体验，而且保持了同 cargo 一致的体验。</p>
 <p>演示如下：</p>
-<h3 id="3-1-安装-cross"><a href="#3-1-安装-cross" class="headerlink" title="3.1 安装 cross"></a>3.1 安装 cross</h3><p><code>crago install cross</code><br>之后就可以使用 <code>cross</code> 替换到 <code>cargo</code> 命令了。</p>
+<h3 id="3-1-安装-cross"><a href="#3-1-安装-cross" class="headerlink" title="3.1 安装 cross"></a>3.1 安装 cross</h3><p><code>cargo install cross</code><br>之后就可以使用 <code>cross</code> 替换到 <code>cargo</code> 命令了。</p>
 <h3 id="3-2-编译-x86-64-unknown-linux-musl"><a href="#3-2-编译-x86-64-unknown-linux-musl" class="headerlink" title="3.2 编译 x86_64-unknown-linux-musl"></a>3.2 编译 <code>x86_64-unknown-linux-musl</code></h3><p><code>cross build --release --target x86_64-unknown-linux-musl</code></p>
 <p>cross 会根据 target 拉取对应的容器镜像，然后在容器镜像内部进行编译， 编译的产物也会挂载在本机的 <code>target/x86_64-unknown-linux-musl</code> 目录下。</p>
 <p>有了 <code>cross</code>，就不用再纠结于各个 target 的复杂依赖，可以很清爽的进行跨平台编译了。</p>
@@ -281,8 +287,8 @@
       <i class="fa fa-chevron-left"></i> docker实战：原理篇
     </a></div>
       <div class="post-nav-item">
-    <a href="/posts/413a7d5a/" rel="next" title="helm 源码剖析">
-      helm 源码剖析 <i class="fa fa-chevron-right"></i>
+    <a href="/posts/5bd51536/" rel="next" title="TAT agent（一）：架构介绍">
+      TAT agent（一）：架构介绍 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -362,7 +368,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -373,7 +379,7 @@
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">26</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
