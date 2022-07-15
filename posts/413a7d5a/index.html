@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.jpeg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpeg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpeg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"hustclf.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1. 背景helm 是非常流行的 k8s 应用管理工具。类似于 python 中的 pip，我们使用 Chart 来定义一个 k8s 应用，使用 helm 来进行应用的安装、升级、发布和回滚。本文旨在对 helm (v3) 的工作原理进行剖析，通过代码走查了解 helm 执行的具体过程，当使用 helm 出现问题时能更容易地定位。 （helm v2 的架构是 cli + server 的组合，已废">
+<meta property="og:type" content="article">
+<meta property="og:title" content="helm 源码剖析">
+<meta property="og:url" content="https://hustclf.github.io/posts/413a7d5a/index.html">
+<meta property="og:site_name" content="大飞哥的博客">
+<meta property="og:description" content="1. 背景helm 是非常流行的 k8s 应用管理工具。类似于 python 中的 pip，我们使用 Chart 来定义一个 k8s 应用，使用 helm 来进行应用的安装、升级、发布和回滚。本文旨在对 helm (v3) 的工作原理进行剖析，通过代码走查了解 helm 执行的具体过程，当使用 helm 出现问题时能更容易地定位。 （helm v2 的架构是 cli + server 的组合，已废">
+<meta property="og:locale">
+<meta property="og:image" content="https://hustclf.github.io/images/helm/1.png">
+<meta property="og:image" content="https://hustclf.github.io/images/helm/2.png">
+<meta property="og:image" content="https://hustclf.github.io/images/helm/3.png">
+<meta property="og:image" content="https://hustclf.github.io/images/helm/4.png">
+<meta property="article:published_time" content="2022-07-15T09:34:08.000Z">
+<meta property="article:modified_time" content="2022-07-15T10:39:01.911Z">
+<meta property="article:author" content="大飞哥">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="cross">
+<meta property="article:tag" content="跨平台编译">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hustclf.github.io/images/helm/1.png">
+
+<link rel="canonical" href="https://hustclf.github.io/posts/413a7d5a/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>helm 源码剖析 | 大飞哥的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="大飞哥的博客" type="application/atom+xml">
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">大飞哥的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">借书满架，偃仰啸歌，冥然兀坐，万籁有声</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-首页">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-关于">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-开源">
+
+    <a href="/contributions/" rel="section"><i class="github fa-fw"></i>开源</a>
+
+  </li>
+        <li class="menu-item menu-item-标签">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-分类">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-归档">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope="" itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://hustclf.github.io/posts/413a7d5a/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="大飞哥">
+      <meta itemprop="description" content="大数据、云原生、微服务等">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大飞哥的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          helm 源码剖析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2022-07-15 17:34:08 / Modified: 18:39:01" itemprop="dateCreated datePublished" datetime="2022-07-15T17:34:08+08:00">2022-07-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/" itemprop="url" rel="index"><span itemprop="name">云原生</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h2><p>helm 是非常流行的 k8s 应用管理工具。类似于 python 中的 pip，我们使用 Chart 来定义一个 k8s 应用，使用 helm 来进行应用的安装、升级、发布和回滚。<br>本文旨在对 helm (v3) 的工作原理进行剖析，通过代码走查了解 helm 执行的具体过程，当使用 helm 出现问题时能更容易地定位。 （helm v2 的架构是 cli + server 的组合，已废弃）<br>源码的版本是<a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/helm/helm/tree/v3.8.0">v3.8.0</a>。</p>
+<p>阅读本文的一些背景知识：</p>
+<ul>
+<li>k8s 的基本概念：如 Deployment、 Service</li>
+<li>golang 的基础知识</li>
+<li>helm 的基本使用</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="2-helm-的工作原理"><a href="#2-helm-的工作原理" class="headerlink" title="2. helm 的工作原理"></a>2. helm 的工作原理</h2><p>如果使用一句话总结 helm 的工作原理，那就是 helm 是 k8s 的 pip。 我们都对python 的包管理工具 pip 很熟悉，因此可以类比来理解 helm 的功能。 如下图所示：</p>
+<ul>
+<li>pip 来定义和打包 python package</li>
+<li>docker cli 来定义和打包 container</li>
+<li>helm 来定义和打包 k8s application</li>
+</ul>
+<img src="/images/helm/1.png">
+
+<p>pip 和 helm 的功能对比<br><img src="/images/helm/2.png"></p>
+<p>pip 和 helm 的基本操作对比<br><img src="/images/helm/3.png"></p>
+<p>大致的工作原理如下：</p>
+<ul>
+<li>仅仅是个 CLI:helm 不存储任何数据, charts 包保存在本机，helm 生成的 release 保存在 k8s 集群</li>
+<li>主要逻辑是完成 templates 和 values 的渲染，并且请求 k8s apiserver 执行。</li>
+<li><img src="/images/helm/4.png">
+
+</li>
+</ul>
+<p>（I have templates, I have a values.yaml, Ugh, k8s Objects.）</p>
+<h2 id="3-helm-的基本操作"><a href="#3-helm-的基本操作" class="headerlink" title="3. helm 的基本操作"></a>3. helm 的基本操作</h2><p>使用 helm -h 可查看具体用法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">Usage:</span><br><span class="line">helm [command]</span><br><span class="line"></span><br><span class="line">Available Commands:</span><br><span class="line">completion  generate autocompletion scripts for the specified shell</span><br><span class="line">create      create a new chart with the given name</span><br><span class="line">dependency  manage a chart&#x27;s dependencies</span><br><span class="line">env         helm client environment information</span><br><span class="line">get         download extended information of a named release</span><br><span class="line">help        Help about any command</span><br><span class="line">history     fetch release history</span><br><span class="line">install     install a chart</span><br><span class="line">lint        examine a chart for possible issues</span><br><span class="line">list        list releases</span><br><span class="line">package     package a chart directory into a chart archive</span><br><span class="line">plugin      install, list, or uninstall Helm plugins</span><br><span class="line">pull        download a chart from a repository and (optionally) unpack it in local directory</span><br><span class="line">repo        add, list, remove, update, and index chart repositories</span><br><span class="line">rollback    roll back a release to a previous revision</span><br><span class="line">search      search for a keyword in charts</span><br><span class="line">show        show information of a chart</span><br><span class="line">status      display the status of the named release</span><br><span class="line">template    locally render templates</span><br><span class="line">test        run tests for a release</span><br><span class="line">uninstall   uninstall a release</span><br><span class="line">upgrade     upgrade a release</span><br><span class="line">verify      verify that a chart at the given path has been signed and is valid</span><br><span class="line">version     print the client version information</span><br></pre></td></tr></table></figure>
+
+
+<p>接下来主要介绍下 install rollback upgrade  uninstall 等的具体实现。</p>
+<h2 id="4-helm-各模块的代码实现"><a href="#4-helm-各模块的代码实现" class="headerlink" title="4. helm 各模块的代码实现"></a>4. helm 各模块的代码实现</h2><p>helm 的代码结构如下。helm 是使用cobra 实现的cli，其中主要的3个目录功能如下：</p>
+<ul>
+<li>cmd: cli 的入口，定义了各子命令的入参和执行入口</li>
+<li>pkg： 各子命令的具体实现</li>
+<li>internal： 内部共用的utils<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">├── cmd</span><br><span class="line">│   └── helm</span><br><span class="line">├── internal</span><br><span class="line">│   ├── fileutil</span><br><span class="line">│   ├── ignore</span><br><span class="line">│   ├── monocular</span><br><span class="line">│   ├── resolver</span><br><span class="line">│   ├── sympath</span><br><span class="line">│   ├── test</span><br><span class="line">│   ├── third_party</span><br><span class="line">│   ├── tlsutil</span><br><span class="line">│   ├── urlutil</span><br><span class="line">│   └── version</span><br><span class="line">├── pkg</span><br><span class="line">│   ├── action</span><br><span class="line">│   ├── chart</span><br><span class="line">│   ├── chartutil</span><br><span class="line">│   ├── cli</span><br><span class="line">│   ├── downloader</span><br><span class="line">│   ├── engine</span><br><span class="line">│   ├── gates</span><br><span class="line">│   ├── getter</span><br><span class="line">│   ├── helmpath</span><br><span class="line">│   ├── kube</span><br><span class="line">│   ├── lint</span><br><span class="line">│   ├── plugin</span><br><span class="line">│   ├── postrender</span><br><span class="line">│   ├── provenance</span><br><span class="line">│   ├── pusher</span><br><span class="line">│   ├── registry</span><br><span class="line">│   ├── release</span><br><span class="line">│   ├── releaseutil</span><br><span class="line">│   ├── repo</span><br><span class="line">│   ├── storage</span><br><span class="line">│   ├── strvals</span><br><span class="line">│   ├── time</span><br><span class="line">│   └── uploader</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="入口逻辑"><a href="#入口逻辑" class="headerlink" title="入口逻辑"></a>入口逻辑</h3><p>cmd/helm/helm.go 是 程序入口，主要逻辑有如下两块：</p>
+<ol>
+<li>newRootCmd（cmd/helm/helm.go:66）， 其主要做了如下工作</li>
+</ol>
+<ul>
+<li>helm 及子命令和参数注册</li>
+<li>k8sClient、RegistryClient 的初始化</li>
+<li>helm 插件的加载</li>
+</ul>
+<ol start="2">
+<li><code>cobra.OnInitialize（cmd/helm/helm.go:73）</code>， 其主要为每个命令执行前预设了前置工作，主要是配置的初始化。<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// run when each command&#x27;s execute method is called</span></span><br><span class="line">cobra.OnInitialize(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    helmDriver := os.Getenv(<span class="string">&quot;HELM_DRIVER&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err := actionConfig.Init(settings.RESTClientGetter(), settings.Namespace(), helmDriver, debug); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> helmDriver == <span class="string">&quot;memory&quot;</span> &#123;</span><br><span class="line">        loadReleasesInMemory(actionConfig)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="helm-install"><a href="#helm-install" class="headerlink" title="helm install"></a>helm install</h3><p>helm install 负责初始化一个 Release。</p>
+<p>执行入口是cmd/helm/install.go， 该文件包含3个函数：</p>
+<ul>
+<li>newInstallCmd：install 子cmd 的初始化</li>
+<li>addInstallFlags： install 命令的参数注册</li>
+<li>runInstall： <code>helm install</code> 的执行入口</li>
+</ul>
+<p>runInstall 为 install 具体执行进行参数的初始化，最终由pkg/action/install.go的 RunWithContext 执行具体的安装工作，<br>确定的参数如下：</p>
+<ul>
+<li>release name</li>
+<li>char name</li>
+<li>dependencies</li>
+<li>values</li>
+</ul>
+<p>RunWithContext 负责最终执行安装的动作，其主要工作如下：</p>
+<ul>
+<li>预安装依赖的 charts （如果有）</li>
+<li>预安装 CRDs， crds 定义在 Chart 的 <code>crd/</code> 下 （一些 Chart 可能定义了 CRD）</li>
+<li>渲染 Chart 和 values.yaml, 生成最终的 k8s Objects</li>
+<li>请求 k8s，将生成的k8s Objects 生成，并将 helm 的 release 信息保持到 k8s。</li>
+<li>一些旁路逻辑：如是否是dryRun，是否在install 后执行 tests 的内容、钩子动作的注册等。<br>具体细节可参考: <code>pkg/action/install.go:189</code><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Run executes the installation with Context</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(i *Install)</span> <span class="title">RunWithContext</span><span class="params">(ctx context.Context, chrt *chart.Chart, vals <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">interface</span>&#123;&#125;)</span> <span class="params">(*release.Release, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// Check reachability of cluster unless in client-only mode (e.g. `helm template` without `--validate`)</span></span><br><span class="line">	<span class="keyword">if</span> !i.ClientOnly &#123;</span><br><span class="line">		<span class="keyword">if</span> err := i.cfg.KubeClient.IsReachable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err := i.availableName(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err := chartutil.ProcessDependencies(chrt, vals); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Pre-install anything in the crd/ directory. We do this before Helm</span></span><br><span class="line">	<span class="comment">// contacts the upstream server and builds the capabilities object.</span></span><br><span class="line">	<span class="keyword">if</span> crds := chrt.CRDObjects(); !i.ClientOnly &amp;&amp; !i.SkipCRDs &amp;&amp; <span class="built_in">len</span>(crds) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// On dry run, bail here</span></span><br><span class="line">		<span class="keyword">if</span> i.DryRun &#123;</span><br><span class="line">			i.cfg.Log(<span class="string">&quot;WARNING: This chart or one of its subcharts contains CRDs. Rendering may fail or contain inaccuracies.&quot;</span>)</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> err := i.installCRDs(crds); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> i.ClientOnly &#123;</span><br><span class="line">		<span class="comment">// Add mock objects in here so it doesn&#x27;t use Kube API server</span></span><br><span class="line">		<span class="comment">// NOTE(bacongobbler): used for `helm template`</span></span><br><span class="line">		i.cfg.Capabilities = chartutil.DefaultCapabilities.Copy()</span><br><span class="line">		<span class="keyword">if</span> i.KubeVersion != <span class="literal">nil</span> &#123;</span><br><span class="line">			i.cfg.Capabilities.KubeVersion = *i.KubeVersion</span><br><span class="line">		&#125;</span><br><span class="line">		i.cfg.Capabilities.APIVersions = <span class="built_in">append</span>(i.cfg.Capabilities.APIVersions, i.APIVersions...)</span><br><span class="line">		i.cfg.KubeClient = &amp;kubefake.PrintingKubeClient&#123;Out: ioutil.Discard&#125;</span><br><span class="line"></span><br><span class="line">		mem := driver.NewMemory()</span><br><span class="line">		mem.SetNamespace(i.Namespace)</span><br><span class="line">		i.cfg.Releases = storage.Init(mem)</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> !i.ClientOnly &amp;&amp; <span class="built_in">len</span>(i.APIVersions) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		i.cfg.Log(<span class="string">&quot;API Version list given outside of client only mode, this list will be ignored&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Make sure if Atomic is set, that wait is set as well. This makes it so</span></span><br><span class="line">	<span class="comment">// the user doesn&#x27;t have to specify both</span></span><br><span class="line">	i.Wait = i.Wait || i.Atomic</span><br><span class="line"></span><br><span class="line">	caps, err := i.cfg.getCapabilities()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// special case for helm template --is-upgrade</span></span><br><span class="line">	isUpgrade := i.IsUpgrade &amp;&amp; i.DryRun</span><br><span class="line">	options := chartutil.ReleaseOptions&#123;</span><br><span class="line">		Name:      i.ReleaseName,</span><br><span class="line">		Namespace: i.Namespace,</span><br><span class="line">		Revision:  <span class="number">1</span>,</span><br><span class="line">		IsInstall: !isUpgrade,</span><br><span class="line">		IsUpgrade: isUpgrade,</span><br><span class="line">	&#125;</span><br><span class="line">	valuesToRender, err := chartutil.ToRenderValues(chrt, vals, options, caps)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rel := i.createRelease(chrt, vals)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> manifestDoc *bytes.Buffer</span><br><span class="line">	rel.Hooks, manifestDoc, rel.Info.Notes, err = i.cfg.renderResources(chrt, valuesToRender, i.ReleaseName, i.OutputDir, i.SubNotes, i.UseReleaseName, i.IncludeCRDs, i.PostRenderer, i.DryRun)</span><br><span class="line">	<span class="comment">// Even for errors, attach this if available</span></span><br><span class="line">	<span class="keyword">if</span> manifestDoc != <span class="literal">nil</span> &#123;</span><br><span class="line">		rel.Manifest = manifestDoc.String()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// Check error from render</span></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		rel.SetStatus(release.StatusFailed, fmt.Sprintf(<span class="string">&quot;failed to render resource: %s&quot;</span>, err.Error()))</span><br><span class="line">		<span class="comment">// Return a release with partial data so that the client can show debugging information.</span></span><br><span class="line">		<span class="keyword">return</span> rel, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Mark this release as in-progress</span></span><br><span class="line">	rel.SetStatus(release.StatusPendingInstall, <span class="string">&quot;Initial install underway&quot;</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> toBeAdopted kube.ResourceList</span><br><span class="line">	resources, err := i.cfg.KubeClient.Build(bytes.NewBufferString(rel.Manifest), !i.DisableOpenAPIValidation)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrap(err, <span class="string">&quot;unable to build kubernetes objects from release manifest&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// It is safe to use &quot;force&quot; here because these are resources currently rendered by the chart.</span></span><br><span class="line">	err = resources.Visit(setMetadataVisitor(rel.Name, rel.Namespace, <span class="literal">true</span>))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Install requires an extra validation step of checking that resources</span></span><br><span class="line">	<span class="comment">// don&#x27;t already exist before we actually create resources. If we continue</span></span><br><span class="line">	<span class="comment">// forward and create the release object with resources that already exist,</span></span><br><span class="line">	<span class="comment">// we&#x27;ll end up in a state where we will delete those resources upon</span></span><br><span class="line">	<span class="comment">// deleting the release because the manifest will be pointing at that</span></span><br><span class="line">	<span class="comment">// resource</span></span><br><span class="line">	<span class="keyword">if</span> !i.ClientOnly &amp;&amp; !isUpgrade &amp;&amp; <span class="built_in">len</span>(resources) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		toBeAdopted, err = existingResourceConflict(resources, rel.Name, rel.Namespace)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrap(err, <span class="string">&quot;rendered manifests contain a resource that already exists. Unable to continue with install&quot;</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Bail out here if it is a dry run</span></span><br><span class="line">	<span class="keyword">if</span> i.DryRun &#123;</span><br><span class="line">		rel.Info.Description = <span class="string">&quot;Dry run complete&quot;</span></span><br><span class="line">		<span class="keyword">return</span> rel, <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> i.CreateNamespace &#123;</span><br><span class="line">		ns := &amp;v1.Namespace&#123;</span><br><span class="line">			TypeMeta: metav1.TypeMeta&#123;</span><br><span class="line">				APIVersion: <span class="string">&quot;v1&quot;</span>,</span><br><span class="line">				Kind:       <span class="string">&quot;Namespace&quot;</span>,</span><br><span class="line">			&#125;,</span><br><span class="line">			ObjectMeta: metav1.ObjectMeta&#123;</span><br><span class="line">				Name: i.Namespace,</span><br><span class="line">				Labels: <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>&#123;</span><br><span class="line">					<span class="string">&quot;name&quot;</span>: i.Namespace,</span><br><span class="line">				&#125;,</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;</span><br><span class="line">		buf, err := yaml.Marshal(ns)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">		resourceList, err := i.cfg.KubeClient.Build(bytes.NewBuffer(buf), <span class="literal">true</span>)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> _, err := i.cfg.KubeClient.Create(resourceList); err != <span class="literal">nil</span> &amp;&amp; !apierrors.IsAlreadyExists(err) &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// If Replace is true, we need to supercede the last release.</span></span><br><span class="line">	<span class="keyword">if</span> i.Replace &#123;</span><br><span class="line">		<span class="keyword">if</span> err := i.replaceRelease(rel); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Store the release in history before continuing (new in Helm 3). We always know</span></span><br><span class="line">	<span class="comment">// that this is a create operation.</span></span><br><span class="line">	<span class="keyword">if</span> err := i.cfg.Releases.Create(rel); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// We could try to recover gracefully here, but since nothing has been installed</span></span><br><span class="line">		<span class="comment">// yet, this is probably safer than trying to continue when we know storage is</span></span><br><span class="line">		<span class="comment">// not working.</span></span><br><span class="line">		<span class="keyword">return</span> rel, err</span><br><span class="line">	&#125;</span><br><span class="line">	rChan := <span class="built_in">make</span>(<span class="keyword">chan</span> resultMessage)</span><br><span class="line">	<span class="keyword">go</span> i.performInstall(rChan, rel, toBeAdopted, resources)</span><br><span class="line">	<span class="keyword">go</span> i.handleContext(ctx, rChan, rel)</span><br><span class="line">	result := &lt;-rChan</span><br><span class="line">	<span class="comment">//start preformInstall go routine</span></span><br><span class="line">	<span class="keyword">return</span> result.r, result.e</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<h3 id="helm-upgrade"><a href="#helm-upgrade" class="headerlink" title="helm upgrade"></a>helm upgrade</h3><p>helm upgrade 负责更新当前的 Release，生成一个新版本的 Release。</p>
+<p>同入install 比较类似，upgrade的执行入口是cmd/helm/upgrade.go， 不过所有功能都放在 newUpgradeCmd函数中</p>
+<p>upgrade cmd 的初始化<br>参数注册<br>更新依赖的charts到本地<br>绑定执行入口，并最终执行 pkg/action/upgrade.go的 RunWithContext 执行具体的更新工作。<br>upgrade.go的 RunWithContext 的主要工作如下：</p>
+<ul>
+<li>从获取前一次的 release 信息，并确保上次的release 不是 pendding 状态</li>
+<li>向k8s 更新 denpendencies chats</li>
+<li>渲染 Chart 和 values.yaml, 生成最终的 k8s Objects</li>
+<li>一些旁路逻辑：如是否是dryRun，是否在 upgrade 后执行 tests 的内容、钩子动作的注册等。<br>具体细节可参考: <code>pkg/action/upgrade.go:130</code><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// RunWithContext executes the upgrade on the given release with context.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u *Upgrade)</span> <span class="title">RunWithContext</span><span class="params">(ctx context.Context, name <span class="keyword">string</span>, chart *chart.Chart, vals <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">interface</span>&#123;&#125;)</span> <span class="params">(*release.Release, error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> err := u.cfg.KubeClient.IsReachable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Make sure if Atomic is set, that wait is set as well. This makes it so</span></span><br><span class="line">	<span class="comment">// the user doesn&#x27;t have to specify both</span></span><br><span class="line">	u.Wait = u.Wait || u.Atomic</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err := chartutil.ValidateReleaseName(name); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Errorf(<span class="string">&quot;release name is invalid: %s&quot;</span>, name)</span><br><span class="line">	&#125;</span><br><span class="line">	u.cfg.Log(<span class="string">&quot;preparing upgrade for %s&quot;</span>, name)</span><br><span class="line">	currentRelease, upgradedRelease, err := u.prepareUpgrade(name, chart, vals)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	u.cfg.Releases.MaxHistory = u.MaxHistory</span><br><span class="line"></span><br><span class="line">	u.cfg.Log(<span class="string">&quot;performing update for %s&quot;</span>, name)</span><br><span class="line">	res, err := u.performUpgrade(ctx, currentRelease, upgradedRelease)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> res, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !u.DryRun &#123;</span><br><span class="line">		u.cfg.Log(<span class="string">&quot;updating status for upgraded release for %s&quot;</span>, name)</span><br><span class="line">		<span class="keyword">if</span> err := u.cfg.Releases.Update(upgradedRelease); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> res, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> res, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<h3 id="helm-rollback"><a href="#helm-rollback" class="headerlink" title="helm rollback"></a>helm rollback</h3><p>helm rollback 负责将当前的 Release 回滚至上一版本。</p>
+<p>rollback的执行入口是 cmd/helm/rollback.go, 其中包含 newRollbackCmd，有以下功能：</p>
+<p>rollback 子cmd 的初始化<br>参数注册<br>注册rollback 的具体回滚函数 Run，定义在 pkg/action/rollback.go:58<br>rollback.go 的 Run的主要工作如下：</p>
+<ul>
+<li>从k8s 中获取当前的 Release 和回滚的Release</li>
+<li>请求 k8s，将当前版本的Release回滚为目标 Release。 这里的实现略复杂，会对两个 release 进行 diff，并进行更新</li>
+<li>请求 k8s 更新 Release 信息<br>一些旁路逻辑： 如是否dryRun, 是否执行钩子、是否需要等待 rollback 结束等等<br>具体细节可参考: <code>pkg/action/rollback.go:58</code><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Run executes &#x27;helm rollback&#x27; against the given release.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *Rollback)</span> <span class="title">Run</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> err := r.cfg.KubeClient.IsReachable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	r.cfg.Releases.MaxHistory = r.MaxHistory</span><br><span class="line"></span><br><span class="line">	r.cfg.Log(<span class="string">&quot;preparing rollback of %s&quot;</span>, name)</span><br><span class="line">	currentRelease, targetRelease, err := r.prepareRollback(name)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !r.DryRun &#123;</span><br><span class="line">		r.cfg.Log(<span class="string">&quot;creating rolled back release for %s&quot;</span>, name)</span><br><span class="line">		<span class="keyword">if</span> err := r.cfg.Releases.Create(targetRelease); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	r.cfg.Log(<span class="string">&quot;performing rollback of %s&quot;</span>, name)</span><br><span class="line">	<span class="keyword">if</span> _, err := r.performRollback(currentRelease, targetRelease); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !r.DryRun &#123;</span><br><span class="line">		r.cfg.Log(<span class="string">&quot;updating status for rolled back release for %s&quot;</span>, name)</span><br><span class="line">		<span class="keyword">if</span> err := r.cfg.Releases.Update(targetRelease); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<h3 id="helm-uninstall"><a href="#helm-uninstall" class="headerlink" title="helm uninstall"></a>helm uninstall</h3><p>helm uninstall 负责将当前的 Release 从 k8s 集群卸载掉。 helm uninstall 默认会删除 helm install 执行生成的所有k8s objects，也可配置保留部分资源。<br>rollback的执行入口是 cmd/helm/uninstall.go, 其中包含 newUninstallCmd，有以下功能：<br>uninstall子cmd 的初始化<br>参数注册<br>注册 uninstall 的具体回滚函数 Run，定义在 pkg/action/uninstall.go:54<br>uninstall.go 的 Run的主要工作如下：</p>
+<p>从k8s 中获取所有的 Release 信息。</p>
+<ul>
+<li>获取当前的 Release 信息，并请求 k8s 删除其关联的 k8s objects</li>
+<li>根据 <code>keep-history</code> 决定是否要从 k8s 中删除 Release 的历史记录</li>
+<li>一些旁路逻辑： 如是否dryRun, 是否执行钩子、是否需要等待 uninstall结束等</li>
+</ul>
+<p>具体细节可参考：<code>pkg/action/uninstall.go:54</code></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Run uninstalls the given release.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u *Uninstall)</span> <span class="title">Run</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(*release.UninstallReleaseResponse, error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> err := u.cfg.KubeClient.IsReachable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> u.DryRun &#123;</span><br><span class="line">		<span class="comment">// In the dry run case, just see if the release exists</span></span><br><span class="line">		r, err := u.cfg.releaseContent(name, <span class="number">0</span>)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> &amp;release.UninstallReleaseResponse&#123;&#125;, err</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> &amp;release.UninstallReleaseResponse&#123;Release: r&#125;, <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err := chartutil.ValidateReleaseName(name); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Errorf(<span class="string">&quot;uninstall: Release name is invalid: %s&quot;</span>, name)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rels, err := u.cfg.Releases.History(name)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrapf(err, <span class="string">&quot;uninstall: Release not loaded: %s&quot;</span>, name)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(rels) &lt; <span class="number">1</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errMissingRelease</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	releaseutil.SortByRevision(rels)</span><br><span class="line">	rel := rels[<span class="built_in">len</span>(rels)<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line">	<span class="comment">// <span class="doctag">TODO:</span> Are there any cases where we want to force a delete even if it&#x27;s</span></span><br><span class="line">	<span class="comment">// already marked deleted?</span></span><br><span class="line">	<span class="keyword">if</span> rel.Info.Status == release.StatusUninstalled &#123;</span><br><span class="line">		<span class="keyword">if</span> !u.KeepHistory &#123;</span><br><span class="line">			<span class="keyword">if</span> err := u.purgeReleases(rels...); err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, errors.Wrap(err, <span class="string">&quot;uninstall: Failed to purge the release&quot;</span>)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> &amp;release.UninstallReleaseResponse&#123;Release: rel&#125;, <span class="literal">nil</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.Errorf(<span class="string">&quot;the release named %q is already deleted&quot;</span>, name)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	u.cfg.Log(<span class="string">&quot;uninstall: Deleting %s&quot;</span>, name)</span><br><span class="line">	rel.Info.Status = release.StatusUninstalling</span><br><span class="line">	rel.Info.Deleted = helmtime.Now()</span><br><span class="line">	rel.Info.Description = <span class="string">&quot;Deletion in progress (or silently failed)&quot;</span></span><br><span class="line">	res := &amp;release.UninstallReleaseResponse&#123;Release: rel&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !u.DisableHooks &#123;</span><br><span class="line">		<span class="keyword">if</span> err := u.cfg.execHook(rel, release.HookPreDelete, u.Timeout); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> res, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		u.cfg.Log(<span class="string">&quot;delete hooks disabled for %s&quot;</span>, name)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// From here on out, the release is currently considered to be in StatusUninstalling</span></span><br><span class="line">	<span class="comment">// state.</span></span><br><span class="line">	<span class="keyword">if</span> err := u.cfg.Releases.Update(rel); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		u.cfg.Log(<span class="string">&quot;uninstall: Failed to store updated release: %s&quot;</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	deletedResources, kept, errs := u.deleteRelease(rel)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> kept != <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">		kept = <span class="string">&quot;These resources were kept due to the resource policy:\n&quot;</span> + kept</span><br><span class="line">	&#125;</span><br><span class="line">	res.Info = kept</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> u.Wait &#123;</span><br><span class="line">		<span class="keyword">if</span> kubeClient, ok := u.cfg.KubeClient.(kube.InterfaceExt); ok &#123;</span><br><span class="line">			<span class="keyword">if</span> err := kubeClient.WaitForDelete(deletedResources, u.Timeout); err != <span class="literal">nil</span> &#123;</span><br><span class="line">				errs = <span class="built_in">append</span>(errs, err)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !u.DisableHooks &#123;</span><br><span class="line">		<span class="keyword">if</span> err := u.cfg.execHook(rel, release.HookPostDelete, u.Timeout); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			errs = <span class="built_in">append</span>(errs, err)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rel.Info.Status = release.StatusUninstalled</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(u.Description) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		rel.Info.Description = u.Description</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		rel.Info.Description = <span class="string">&quot;Uninstallation complete&quot;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !u.KeepHistory &#123;</span><br><span class="line">		u.cfg.Log(<span class="string">&quot;purge requested for %s&quot;</span>, name)</span><br><span class="line">		err := u.purgeReleases(rels...)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			errs = <span class="built_in">append</span>(errs, errors.Wrap(err, <span class="string">&quot;uninstall: Failed to purge the release&quot;</span>))</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Return the errors that occurred while deleting the release, if any</span></span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(errs) &gt; <span class="number">0</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> res, errors.Errorf(<span class="string">&quot;uninstallation completed with %d error(s): %s&quot;</span>, <span class="built_in">len</span>(errs), joinErrors(errs))</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> res, <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err := u.cfg.Releases.Update(rel); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		u.cfg.Log(<span class="string">&quot;uninstall: Failed to store updated release: %s&quot;</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(errs) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> res, errors.Errorf(<span class="string">&quot;uninstallation completed with %d error(s): %s&quot;</span>, <span class="built_in">len</span>(errs), joinErrors(errs))</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/rust/" rel="tag"># rust</a>
+              <a href="/tags/cross/" rel="tag"># cross</a>
+              <a href="/tags/%E8%B7%A8%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91/" rel="tag"># 跨平台编译</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/3d1fe733/" rel="prev" title="cross: rust 的跨平台编译利器">
+      <i class="fa fa-chevron-left"></i> cross: rust 的跨平台编译利器
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">1. 背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-helm-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">2. helm 的工作原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-helm-%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">3. helm 的基本操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-helm-%E5%90%84%E6%A8%A1%E5%9D%97%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">4. helm 各模块的代码实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A5%E5%8F%A3%E9%80%BB%E8%BE%91"><span class="nav-number">4.1.</span> <span class="nav-text">入口逻辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#helm-install"><span class="nav-number">4.2.</span> <span class="nav-text">helm install</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#helm-upgrade"><span class="nav-number">4.3.</span> <span class="nav-text">helm upgrade</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#helm-rollback"><span class="nav-number">4.4.</span> <span class="nav-text">helm rollback</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#helm-uninstall"><span class="nav-number">4.5.</span> <span class="nav-text">helm uninstall</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">大飞哥</p>
+  <div class="site-description" itemprop="description">大数据、云原生、微服务等</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hustclf" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hustclf" rel="external nofollow noopener noreferrer" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:hustclf@gmail.com" title="E-Mail → mailto:hustclf@gmail.com" rel="external nofollow noopener noreferrer" target="_blank"><i class="envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8595519/lifei-chen" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8595519&#x2F;lifei-chen" rel="external nofollow noopener noreferrer" target="_blank"><i class="stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.linkedin.com/in/lifei-chen-b53568122/" title="Linkedin → https:&#x2F;&#x2F;www.linkedin.com&#x2F;in&#x2F;lifei-chen-b53568122&#x2F;" rel="external nofollow noopener noreferrer" target="_blank"><i class="linkedin fa-fw"></i>Linkedin</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">大飞哥</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="external nofollow noopener noreferrer" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://hustclf.github.io/posts/413a7d5a/";
+    this.page.identifier = "posts/413a7d5a/";
+    this.page.title = "helm 源码剖析";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://hustclf.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
