@@ -1,15 +1,14 @@
 ---
 title: helm 源码剖析
 tags:
-  - rust
-  - cross
-  - 跨平台编译
+  - helm
+  - k8s
 categories:
   - 云原生
 abbrlink: 413a7d5a
-date: 2022-07-15 17:34:08
+date: 2022-02-13 17:34:08
 ---
-## 1. 背景
+## 背景
 helm 是非常流行的 k8s 应用管理工具。类似于 python 中的 pip，我们使用 Chart 来定义一个 k8s 应用，使用 helm 来进行应用的安装、升级、发布和回滚。
 本文旨在对 helm (v3) 的工作原理进行剖析，通过代码走查了解 helm 执行的具体过程，当使用 helm 出现问题时能更容易地定位。 （helm v2 的架构是 cli + server 的组合，已废弃）
 源码的版本是[v3.8.0](https://github.com/helm/helm/tree/v3.8.0)。
@@ -21,7 +20,7 @@ helm 是非常流行的 k8s 应用管理工具。类似于 python 中的 pip，�
 
 <!-- more -->
 
-## 2. helm 的工作原理
+## helm 的工作原理
 如果使用一句话总结 helm 的工作原理，那就是 helm 是 k8s 的 pip。 我们都对python 的包管理工具 pip 很熟悉，因此可以类比来理解 helm 的功能。 如下图所示：
 - pip 来定义和打包 python package
 - docker cli 来定义和打包 container
@@ -43,7 +42,7 @@ pip 和 helm 的基本操作对比
 
 （I have templates, I have a values.yaml, Ugh, k8s Objects.）
 
-## 3. helm 的基本操作
+## helm 的基本操作
 使用 helm -h 可查看具体用法如下：
 ```
 Usage:
@@ -79,7 +78,7 @@ version     print the client version information
 
 接下来主要介绍下 install rollback upgrade  uninstall 等的具体实现。
 
-## 4. helm 各模块的代码实现
+## helm 各模块的代码实现
 helm 的代码结构如下。helm 是使用cobra 实现的cli，其中主要的3个目录功能如下：
 
 - cmd: cli 的入口，定义了各子命令的入参和执行入口

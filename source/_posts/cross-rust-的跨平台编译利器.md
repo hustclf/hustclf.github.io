@@ -52,7 +52,7 @@ cargo 本身支持跨平台编译，一般使用有如下命令：
 
 演示如下：
 ### 3.1 安装 cross
-`crago install cross`
+`cargo install cross`
 之后就可以使用 `cross` 替换到 `cargo` 命令了。
 ### 3.2 编译 `x86_64-unknown-linux-musl`
 `cross build --release --target x86_64-unknown-linux-musl`
